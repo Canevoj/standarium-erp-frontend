@@ -1,0 +1,286 @@
+/*
+ * Arquivo: style.css
+ * Descrição: Contém todos os estilos CSS para a aplicação Standarium ERP.
+ * Inclui estilos globais, responsivos e utilitários baseados em Tailwind.
+ */
+
+/* Variáveis CSS para a largura da sidebar */
+:root {
+    --sidebar-width: 16rem; /* Largura padrão da sidebar */
+    --sidebar-width-collapsed: 4.5rem; /* Largura da sidebar quando colapsada */
+}
+
+/* Estilos básicos para o corpo da página e fonte */
+body {
+    font-family: 'Inter', sans-serif; /* Define a fonte principal */
+    background-color: #030712; /* Cor de fundo escura */
+    color: #f9fafb; /* Cor do texto claro */
+}
+
+/* Estilos da barra de rolagem para o conteúdo principal */
+.main-content::-webkit-scrollbar {
+    width: 8px; /* Largura da barra de rolagem */
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background-color: #374151; /* Cor do "polegar" da barra de rolagem */
+    border-radius: 4px; /* Borda arredondada */
+}
+
+/* Estilos para a sidebar */
+.sidebar {
+    width: var(--sidebar-width); /* Utiliza a variável CSS para a largura */
+    transition: width 0.3s ease-in-out; /* Animação suave para a transição de largura */
+}
+
+.sidebar.collapsed {
+    width: var(--sidebar-width-collapsed); /* Largura quando colapsada */
+}
+
+/* Oculta o texto da sidebar quando colapsada */
+.sidebar.collapsed .sidebar-text,
+.sidebar.collapsed .app-title {
+    opacity: 0; /* Torna o texto transparente */
+    width: 0; /* Reduz a largura para ocultar */
+    visibility: hidden; /* Oculta completamente */
+    pointer-events: none; /* Desabilita interações com o texto */
+    transition: opacity 0.1s, width 0.1s; /* Animação rápida para ocultar */
+}
+
+/* Mostra o texto da sidebar quando expandida */
+.sidebar .sidebar-text,
+.sidebar .app-title {
+    transition: opacity 0.2s ease-in-out 0.1s, width 0.2s ease-in-out 0.1s; /* Animação para mostrar o texto */
+}
+
+/* Estilos para os links da sidebar */
+.sidebar .sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #d1d5db; /* Cor do texto dos links */
+    transition: all 0.2s ease-in-out; /* Animação suave em todas as propriedades */
+}
+
+/* Centraliza os itens da sidebar quando colapsada */
+.sidebar.collapsed .sidebar-link-container {
+    justify-content: center;
+}
+
+/* Estilos responsivos para a sidebar em telas pequenas (mobile) */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%); /* Oculta a sidebar fora da tela */
+        position: fixed; /* Fixa a posição */
+        z-index: 40; /* Z-index alto para ficar acima de outros elementos */
+        height: 100%; /* Ocupa a altura total */
+    }
+
+    .sidebar.open {
+        transform: translateX(0); /* Mostra a sidebar */
+    }
+}
+
+/* Estilos para as páginas (seções de conteúdo) */
+.page {
+    display: none; /* Oculta as páginas por padrão */
+    animation: fadeIn 0.3s ease-in-out; /* Animação de fade-in */
+}
+
+.page.active {
+    display: block; /* Mostra a página ativa */
+}
+
+/* Animação de fade-in para as páginas */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para modais */
+.modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    max-height: 90vh; /* Limita a altura máxima do conteúdo do modal */
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo escuro e semitransparente */
+    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+}
+
+/* Estilos para campos de formulário */
+.form-input,
+.form-select,
+.form-textarea {
+    background-color: #1f2937; /* Cor de fundo escura */
+    border: 1px solid #374151; /* Borda sutil */
+    border-radius: 0.375rem; /* Borda arredondada */
+    padding: 0.5rem 0.75rem; /* Preenchimento interno */
+    width: 100%; /* Ocupa a largura total */
+    color: #f9fafb; /* Cor do texto */
+}
+
+/* Estilos de foco para campos de formulário */
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none; /* Remove o outline padrão */
+    border-color: #0ea5e9; /* Altera a cor da borda no foco */
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.5); /* Sombra de foco */
+}
+
+/* Estilos para botões */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600; /* Peso da fonte */
+    padding: 0.6rem 1.2rem; /* Preenchimento interno */
+    border-radius: 0.5rem; /* Borda arredondada */
+    transition: all 0.2s; /* Animação suave em todas as propriedades */
+    cursor: pointer; /* Cursor de ponteiro */
+}
+
+/* Estilos para botões desabilitados */
+.btn:disabled {
+    background-color: #374151; /* Cor de fundo para desabilitado */
+    color: #6b7280; /* Cor do texto para desabilitado */
+    cursor: not-allowed; /* Cursor de "não permitido" */
+}
+
+/* Estilos para botão primário */
+.btn-primary {
+    background-color: #0ea5e9; /* Cor de fundo azul */
+    color: white; /* Cor do texto branco */
+}
+
+.btn-primary:not(:disabled):hover {
+    background-color: #0284c7; /* Cor de fundo no hover */
+}
+
+/* Estilos para botão secundário */
+.btn-secondary {
+    background-color: #374151; /* Cor de fundo cinza escuro */
+    color: white; /* Cor do texto branco */
+}
+
+.btn-secondary:not(:disabled):hover {
+    background-color: #4b5563; /* Cor de fundo no hover */
+}
+
+/* Estilos para o overlay de carregamento */
+#loading-overlay {
+    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+}
+
+/* Estilos para o contêiner do gráfico */
+.chart-container {
+    position: relative;
+    height: 35vh; /* Altura responsiva */
+    width: 100%; /* Largura total */
+}
+
+/* Estilos para o botão Gemini (IA) */
+.gemini-btn {
+    background: linear-gradient(90deg, #89f7fe 0%, #66a6ff 100%); /* Gradiente de cor */
+    color: #111827; /* Cor do texto */
+    padding: 0.25rem 0.5rem; /* Preenchimento menor */
+    font-size: 0.75rem; /* Tamanho da fonte menor */
+    border-radius: 0.375rem; /* Borda arredondada */
+}
+
+.gemini-btn:disabled {
+    background: #374151; /* Cor de fundo para desabilitado */
+    color: #6b7280; /* Cor do texto para desabilitado */
+}
+
+/* Estilos para o spinner de carregamento */
+.spinner {
+    border: 2px solid rgba(255, 255, 255, 0.3); /* Borda transparente */
+    border-radius: 50%; /* Torna-o circular */
+    border-top-color: #fff; /* Cor da parte superior da borda */
+    width: 1rem;
+    height: 1rem;
+    animation: spin 1s ease-in-out infinite; /* Animação de rotação */
+}
+
+/* Animação de rotação para o spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Estilos para o dropdown de exportação */
+.export-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+}
+
+/* Estilos de impressão */
+@media print {
+    body,
+    html {
+        background-color: white !important; /* Fundo branco forçado */
+        color: black !important; /* Texto preto forçado */
+    }
+
+    body * {
+        visibility: hidden; /* Oculta todos os elementos do corpo */
+    }
+
+    #print-area,
+    #print-area * {
+        visibility: visible; /* Torna a área de impressão visível */
+    }
+
+    #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 2rem;
+    }
+
+    /* Estilos de tabela para impressão */
+    table {
+        border-collapse: collapse; /* Colapsa bordas da tabela */
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid #ccc; /* Borda para células */
+        padding: 8px; /* Preenchimento */
+        text-align: left; /* Alinhamento do texto */
+    }
+
+    th {
+        background-color: #eee; /* Fundo para cabeçalhos */
+    }
+
+    h1,
+    h2,
+    h3 {
+        color: black; /* Cor do título preto */
+    }
+
+    @page {
+        size: landscape; /* Orientação da página paisagem */
+        margin: 1cm; /* Margens da página */
+    }
+}
