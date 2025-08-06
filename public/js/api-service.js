@@ -15,9 +15,8 @@
         const apiService = {
 
             async callGeminiAPI(prompt, callingButton) {
-                // SUBSTITUA POR A URL COMPLETA DO SEU BACKEND NO RENDER!
-                // Exemplo: 'https://standarium-erp-api.onrender.com/api/generate-text'
-                const backendUrl = 'https://standarium-erp-api.onrender.com/api/generate-text'; // <-- ATUALIZE AQUI!
+                
+                const backendUrl = 'https://standarium-erp-api.onrender.com'; 
 
                 const originalButtonText = callingButton.innerHTML;
 
