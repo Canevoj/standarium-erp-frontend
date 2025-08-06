@@ -3,12 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Standarium ERP</title>
-    <!-- O Vite injetará o CSS e JS aqui automaticamente -->
+    <title>Gestão Standarium</title>
+    
+    <!-- Tailwind CSS CDN - Usaremos o CDN por enquanto. Idealmente, seria empacotado. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonte Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Libraries CDN - Idealmente, seriam empacotadas com um bundler (Vite/Webpack) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <!-- CSS Embutido temporariamente para garantir o funcionamento do deploy -->
+    <style>
+        :root { --sidebar-width: 16rem; --sidebar-width-collapsed: 4.5rem; }
+        body { font-family: 'Inter', sans-serif; background-color: #030712; color: #f9fafb; }
+        .main-content::-webkit-scrollbar { width: 8px; }
+        .main-content::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 4px; }
+        
+        .sidebar { width: var(--sidebar-width); transition: width 0.3s ease-in-out; }
+        .sidebar.collapsed { width: var(--sidebar-width-collapsed); }
+        .sidebar.collapsed .sidebar-text, .sidebar.collapsed .app-title { opacity: 0; width: 0; visibility: hidden; pointer-events: none; transition: opacity 0.1s, width 0.1s; }
+        .sidebar .sidebar-text, .sidebar .app-title { transition: opacity 0.2s ease-in-out 0.1s, width 0.2s ease-in-out 0.1s; }
+        .sidebar .sidebar-link { 
+            display: flex; 
+            align-items: center; 
+            padding: 0.75rem 1rem; 
+            border-radius: 0.5rem; 
+            color: #d1d5db; 
+            transition: all 0.2s ease-in-out; 
+        }
+        .sidebar.collapsed .sidebar-link-container { justify-content: center; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 40; height: 100%; }
+            .sidebar.open { transform: translateX(0); }
+        }
+
+        .page { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .modal { display: flex; align-items: center; justify-content: center; }
+        .modal-content { max-height: 90vh; }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+        
+        .form-input, .form-select, .form-textarea { background-color: #1f2937; border: 1px solid #374151; border-radius: 0.375rem; padding: 0.5rem 0.75rem; width: 100%; color: #f9fafb; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #0ea5e9; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.5); }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 0.5rem; transition: all 0.2s; cursor: pointer; }
+        .btn:disabled { background-color: #374151; color: #6b7280; cursor: not-allowed; }
+        .btn-primary { background-color: #0ea5e9; color: white; }
+        .btn-primary:not(:disabled):hover { background-color: #0284c7; }
+        .btn-secondary { background-color: #374151; color: white; }
+        .btn-secondary:not(:disabled):hover { background-color: #4b5563; }
+        
+        #loading-overlay { backdrop-filter: blur(4px); }
+        .chart-container { position: relative; height: 35vh; width: 100%; }
+        
+        .gemini-btn { background: linear-gradient(90deg, #89f7fe 0%, #66a6ff 100%); color: #111827; padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 0.375rem; }
+        .gemini-btn:disabled { background: #374151; color: #6b7280; }
+        
+        .spinner { border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: #fff; width: 1rem; height: 1rem; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .export-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; }
+        
+        @media print {
+            body, html { background-color: white !important; color: black !important; }
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 2rem; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+            th { background-color: #eee; }
+            h1, h2, h3 { color: black; }
+            @page { size: landscape; margin: 1cm; }
+        }
+    </style>
 </head>
-<body>
-    <div id="app">
-         <!-- Overlay de Carregamento -->
+<body class="antialiased">
+
+    <!-- Overlay de Carregamento -->
     <div id="loading-overlay" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-gray-900/80">
         <div class="ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4 animate-spin" style="border-top-color: #0ea5e9;"></div>
         <h2 id="loading-text" class="text-center text-white text-xl font-semibold">Carregando...</h2>
@@ -107,7 +187,8 @@
     <div id="component-modal" class="fixed inset-0 z-50 p-4 modal-backdrop hidden modal"></div>
     <div id="confirm-modal" class="fixed inset-0 z-50 p-4 modal-backdrop hidden modal"></div>
     <div id="print-area" class="hidden"></div>
-    </div>
-    <script type="module" src="/js/app.js"></script>
+
+    <!-- Script principal da aplicação, que importará os outros módulos -->
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
