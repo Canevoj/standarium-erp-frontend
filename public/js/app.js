@@ -4,8 +4,9 @@
  * Orquestra a inicialização dos serviços e a configuração inicial da UI.
  */
 
-// Importa os módulos necessários
-import * as feather from 'feather-icons'; // Importa Feather Icons
+// A importação de 'feather-icons' foi removida, pois a biblioteca já é
+// carregada via CDN no index.html e o navegador não consegue resolver
+// o módulo sem um empacotador de módulos (ex: Vite).
 
 import { firebaseService } from './firebase-service.js';
 import { uiHandlers } from './ui-handlers.js';
@@ -41,7 +42,8 @@ const app = {
         uiHandlers.init(this.elements, this);
         // Passa as referências de elementos e o objeto app para renderFunctions
         renderFunctions.init(this.elements, this);
-        
+        // Passa as referências de elementos e o objeto app para dataStore
+        dataStore.init(this.elements, this);
 
 
         // Configura os event listeners
@@ -54,7 +56,9 @@ const app = {
         this.navigateTo(window.location.hash || '#dashboard');
 
         // Garante que os ícones do Feather Icons sejam substituídos após o carregamento inicial
-        if (window.feather) feather.replace();
+        if (window.feather) {
+            feather.replace();
+        }
     },
 
     /**
@@ -66,9 +70,8 @@ const app = {
         this.elements.pages.forEach(page => page.classList.toggle('active', page.id === `page-${targetId}`));
         this.elements.sidebarLinks.forEach(link => link.classList.toggle('active', link.hash === `#${targetId}`));
         window.location.hash = targetId;
-        // A renderização agora é baseada em eventos, mas podemos forçar uma renderização 
-        // geral na navegação para garantir que a página correta seja exibida.
-        this.render.renderAll(); 
+        // Re-renderiza todo o conteúdo da página ativa quando a navegação muda
+        this.render.renderAll();
     },
 };
 
