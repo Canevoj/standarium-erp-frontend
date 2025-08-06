@@ -46,6 +46,7 @@ const firebaseService = {
 
         if (!firebaseConfig.projectId || firebaseConfig.projectId === "YOUR_PROJECT_ID") {
             utils.showError("Configuração do Firebase não encontrada. Verifique as chaves de configuração.", this.elements.loadingOverlay, this.elements.loadingText);
+            this.elements.loadingOverlay.classList.add('hidden'); // Certifica que o loading é ocultado
             return;
         }
 
@@ -57,6 +58,7 @@ const firebaseService = {
         } catch (error) {
             console.error("Falha na inicialização do Firebase:", error);
             utils.showError("Falha ao inicializar o Firebase. Verifique suas chaves.", this.elements.loadingOverlay, this.elements.loadingText);
+            this.elements.loadingOverlay.classList.add('hidden'); // Certifica que o loading é ocultado
         }
     },
 
