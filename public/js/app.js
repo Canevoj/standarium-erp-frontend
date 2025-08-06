@@ -4,8 +4,6 @@
  * Orquestra a inicialização dos serviços e a configuração inicial da UI.
  */
 
-import '../css/style.css'; // Importa o CSS principal
-
 // Importa os módulos necessários
 import * as feather from 'feather-icons'; // Importa Feather Icons
 
@@ -56,7 +54,7 @@ const app = {
         this.navigateTo(window.location.hash || '#dashboard');
 
         // Garante que os ícones do Feather Icons sejam substituídos após o carregamento inicial
-        feather.replace();
+        if (window.feather) feather.replace();
     },
 
     /**
