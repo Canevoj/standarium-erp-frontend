@@ -4,10 +4,7 @@
  * Orquestra a inicialização dos serviços e a configuração inicial da UI.
  */
 
-// A importação de 'feather-icons' foi removida, pois a biblioteca já é
-// carregada via CDN no index.html e o navegador não consegue resolver
-// o módulo sem um empacotador de módulos (ex: Vite).
-
+// Importa os módulos necessários
 import { firebaseService } from './firebase-service.js';
 import { uiHandlers } from './ui-handlers.js';
 import { domManager } from './dom-manager.js';
@@ -42,8 +39,8 @@ const app = {
         uiHandlers.init(this.elements, this);
         // Passa as referências de elementos e o objeto app para renderFunctions
         renderFunctions.init(this.elements, this);
-        // Passa as referências de elementos e o objeto app para dataStore
-        dataStore.init(this.elements, this);
+        // A linha abaixo foi REMOVIDA pois dataStore não tem uma função init
+        // dataStore.init(this.elements, this);
 
 
         // Configura os event listeners
