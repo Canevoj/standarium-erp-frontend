@@ -1,3 +1,9 @@
+/*
+ * Arquivo: ui-handlers.js
+ * Descrição: Módulo responsável por configurar todos os event listeners
+ * e gerenciar as interações da interface do usuário (UI).
+ */
+
 import { firebaseService } from './firebase-service.js';
 import { apiService } from './api-service.js';
 import { dataStore } from './data-store.js';
@@ -112,6 +118,7 @@ const uiHandlers = {
         this.elements.insightsContainer.addEventListener('click', (e) => {
             if (e.target.id === 'close-insights-btn' || e.target.closest('#close-insights-btn')) {
                 this.elements.insightsContainer.classList.add('hidden');
+                this.chatHistory = [];
             }
         });
 
@@ -302,6 +309,8 @@ const uiHandlers = {
         const description = await apiService.callGeminiAPI(prompt, button);
         if (description) {
             this.elements.productForm.querySelector('#descricao').value = description;
+        } else {
+            utils.showConfirmation("Desculpe, a IA não conseguiu gerar a descrição. Tente novamente.", () => {}, this.elements);
         }
     },
 
@@ -323,67 +332,54 @@ const uiHandlers = {
 
         const initialPrompt = `Sou dono de uma pequena empresa de revenda de eletrônicos. No período de "${period}", estes foram meus resultados: Faturamento de ${faturamento}, Lucro de ${lucro}, e ${vendidos} itens vendidos. Com base nesses números, gere uma análise de negócios concisa para mim. Destaque pontos positivos, possíveis pontos de atenção e me dê 3 sugestões práticas e acionáveis para melhorar meus resultados no próximo período. Seja direto e use um tom de consultor de negócios. Formate a resposta em markdown, usando títulos com ** para negrito.`;
         
-        // Adiciona a pergunta inicial ao histórico
         this.chatHistory.push({ role: 'user', parts: [{ text: initialPrompt }] });
 
         const insights = await apiService.callGeminiAPIWithChat(this.chatHistory, button);
 
         if (insights) {
-            // Adiciona a resposta da IA ao histórico
             this.chatHistory.push({ role: 'model', parts: [{ text: insights }] });
-            
-            // Renderiza o container de chat com a primeira resposta
             this.renderInsightsChat(insights);
         } else {
             this.elements.insightsContainer.innerHTML = `
                 <button id="close-insights-btn" class="absolute top-2 right-2 text-gray-400 hover:text-white p-1 rounded-full"><i data-feather="x" class="h-4 w-4"></i></button>
                 <div class="p-4 text-red-400">Desculpe, a IA não conseguiu gerar a análise. Tente novamente.</div>
             `;
+            if (window.feather) feather.replace();
         }
     },
 
-    /**
-     * Envia uma nova mensagem para a IA e renderiza a resposta no chat.
-     */
     async sendChatMessage() {
         const chatInput = this.elements.insightsContainer.querySelector('#chat-input');
         const userMessage = chatInput.value;
         if (!userMessage) return;
 
-        chatInput.value = ''; // Limpa o input
-        this.chatHistory.push({ role: 'user', parts: [{ text: userMessage }] }); // Adiciona a mensagem do usuário ao histórico
-        
-        // Renderiza a mensagem do usuário no chat
+        chatInput.value = '';
+        this.chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+
         const chatBody = this.elements.insightsContainer.querySelector('#chat-body');
         chatBody.innerHTML += `<div class="bg-gray-700/50 p-3 rounded-lg self-end max-w-[80%] my-2">${userMessage}</div>`;
-        chatBody.scrollTop = chatBody.scrollHeight; // Rola para o fim
+        chatBody.scrollTop = chatBody.scrollHeight;
 
-        // Exibe o spinner de loading
         const spinner = document.createElement('div');
         spinner.id = 'ai-spinner';
         spinner.className = 'w-6 h-6 border-2 border-t-2 border-sky-400 rounded-full animate-spin my-2';
         chatBody.appendChild(spinner);
-        chatBody.scrollTop = chatBody.scrollHeight; // Rola para o fim
+        chatBody.scrollTop = chatBody.scrollHeight;
 
-        const button = this.elements.insightsContainer.querySelector('#send-chat-btn');
-        button.disabled = true;
+        const sendButton = this.elements.insightsContainer.querySelector('#send-chat-btn');
+        sendButton.disabled = true;
 
-        const aiResponse = await apiService.callGeminiAPIWithChat(this.chatHistory, button);
+        const aiResponse = await apiService.callGeminiAPIWithChat(this.chatHistory, sendButton);
 
-        // Remove o spinner
         spinner.remove();
-        button.disabled = false;
+        sendButton.disabled = false;
 
         if (aiResponse) {
-            this.chatHistory.push({ role: 'model', parts: [{ text: aiResponse }] }); // Adiciona a resposta da IA
-            this.renderChatMessage(aiResponse, 'model'); // Renderiza a resposta da IA
+            this.chatHistory.push({ role: 'model', parts: [{ text: aiResponse }] });
+            this.renderChatMessage(aiResponse, 'model');
         }
     },
 
-    /**
-     * Renderiza o chat de insights na UI.
-     * @param {string} initialInsights - A primeira análise gerada pela IA.
-     */
     renderInsightsChat(initialInsights) {
         const formattedInsights = this.formatMarkdownToHtml(initialInsights);
         this.elements.insightsContainer.innerHTML = `
@@ -405,7 +401,7 @@ const uiHandlers = {
             </div>
         `;
         
-        feather.replace(); // Atualiza os ícones
+        if (window.feather) feather.replace();
 
         const sendButton = this.elements.insightsContainer.querySelector('#send-chat-btn');
         const chatInput = this.elements.insightsContainer.querySelector('#chat-input');
@@ -418,11 +414,6 @@ const uiHandlers = {
         });
     },
 
-    /**
-     * Renderiza uma nova mensagem no corpo do chat.
-     * @param {string} message - A mensagem a ser renderizada.
-     * @param {string} role - O papel (role) da mensagem ('user' ou 'model').
-     */
     renderChatMessage(message, role) {
         const chatBody = this.elements.insightsContainer.querySelector('#chat-body');
         const formattedMessage = this.formatMarkdownToHtml(message);
@@ -430,13 +421,9 @@ const uiHandlers = {
         const textColor = role === 'user' ? 'text-gray-200' : 'text-sky-200';
         
         chatBody.innerHTML += `<div class="${bgColor} ${textColor} p-3 rounded-lg self-start max-w-[80%] my-2">${formattedMessage}</div>`;
-        chatBody.scrollTop = chatBody.scrollHeight; // Rola para o fim
+        chatBody.scrollTop = chatBody.scrollHeight;
     },
 
-    /**
-     * Exporta os dados dos relatórios para diferentes formatos (CSV, PDF, XLSX).
-     * @param {string} format - O formato de exportação ('csv', 'pdf', 'xlsx').
-     */
     exportReports(format) {
         const reportType = this.elements.reportTypeFilter.value;
         const { data, headers } = utils.getReportData(reportType, dataStore.getProducts());
@@ -455,9 +442,6 @@ const uiHandlers = {
         this.elements.exportDropdown.classList.add('hidden');
     },
 
-    /**
-     * Converte texto Markdown simples em HTML.
-     */
     formatMarkdownToHtml(markdown) {
         return markdown
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
