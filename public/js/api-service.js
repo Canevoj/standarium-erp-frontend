@@ -1,22 +1,11 @@
-        /*
-         * Arquivo: api-service.js
-         * Descrição: Módulo para chamadas a APIs externas, como a API Gemini.
-         *
-         * IMPORTANTE: Sua chave da Gemini API NUNCA deve ser exposta diretamente no frontend.
-         * Este módulo demonstra como você chamaria um endpoint do seu próprio backend,
-         * que por sua vez, faria a chamada segura para a Gemini API usando sua chave.
-         *
-         * Você precisará implementar um pequeno servidor Node.js/Python/etc. para isso.
-         * Um exemplo básico de backend (Node.js com Express) foi fornecido na explicação anterior.
-         */
-
-        import { utils } from './utils.js';
+import { utils } from './utils.js';
 
         const apiService = {
 
             async callGeminiAPI(prompt, callingButton) {
-                
-                const backendUrl = 'https://standarium-erp-api.onrender.com'; 
+                // SUBSTITUA POR A URL COMPLETA DO SEU BACKEND NO RENDER!
+                // Exemplo: 'https://standarium-erp-api.onrender.com/api/generate-text'
+                const backendUrl = 'https://standarium-erp-api.onrender.com/api/generate-text'; // <-- ATUALIZE AQUI!
 
                 const originalButtonText = callingButton.innerHTML;
 
@@ -54,4 +43,3 @@
         };
 
         export { apiService };
-        
