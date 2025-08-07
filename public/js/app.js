@@ -26,8 +26,6 @@ const app = {
 
     /**
      * Inicializa a aplicação.
-     * Chama a injeção de HTML, caching de elementos, setup de event listeners,
-     * e inicialização do Firebase.
      */
     async init() {
         // Injeta o HTML das páginas e modais no DOM
@@ -39,15 +37,15 @@ const app = {
         uiHandlers.init(this.elements, this);
         // Passa as referências de elementos e o objeto app para renderFunctions
         renderFunctions.init(this.elements, this);
-        // A linha abaixo foi REMOVIDA pois dataStore não tem uma função init
-        // dataStore.init(this.elements, this);
+        // Passa as referências de elementos e o objeto app para dataStore
+        dataStore.init(this.elements, this);
 
 
         // Configura os event listeners
         uiHandlers.setupEventListeners();
 
         // Inicializa o serviço Firebase
-        await firebaseService.init(this.elements, this); // Passa 'this' (app) para o service para callback
+        await firebaseService.init(this.elements, this);
         
         // Navega para a página inicial ou para o dashboard
         this.navigateTo(window.location.hash || '#dashboard');
