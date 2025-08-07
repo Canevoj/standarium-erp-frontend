@@ -4,14 +4,11 @@
  * e gerenciamento de dados no Firestore.
  */
 
-// Removidas as importações de módulo do Firebase.
-// O Firebase agora é carregado via CDN e disponível globalmente.
-
 // Importa as utilidades
 import { utils } from './utils.js';
 import { dataStore } from './data-store.js';
 
-// Configuração do Firebase (SUBSTITUA PELAS SUAS PRÓPRIAS CHAVES!)
+// Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDWKmS0mWBI85QnE9Ajy_qGn4yY00TtmcY",
     authDomain: "bizural-gestao.firebaseapp.com",
@@ -43,7 +40,6 @@ const firebaseService = {
         }
 
         try {
-            // Inicializa o Firebase usando a variável global 'firebase'
             const firebaseApp = firebase.initializeApp(firebaseConfig);
             this.db = firebaseApp.firestore();
             this.auth = firebaseApp.auth();
@@ -65,7 +61,6 @@ const firebaseService = {
                 this.elements.authContainer.classList.add('hidden');
                 this.elements.appContainer.classList.remove('hidden');
                 this.setupFirestoreListeners();
-                this.appInstance.navigateTo(window.location.hash || '#dashboard');
             } else {
                 this.userId = null;
                 this.elements.authContainer.classList.remove('hidden');
@@ -93,18 +88,21 @@ const firebaseService = {
         this.db.collection(productsPath).onSnapshot(snapshot => {
             const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             dataStore.setProducts(products);
+            this.appInstance.render.renderAll(); // Força a renderização completa após a atualização dos produtos
         }, error => console.error("Erro ao buscar produtos:", error));
 
         // Listener para serviços
         this.db.collection(servicesPath).onSnapshot(snapshot => {
             const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             dataStore.setServices(services);
+            this.appInstance.render.renderServicesTable(); // Força a renderização da tabela de serviços
         }, error => console.error("Erro ao buscar serviços:", error));
 
         // Listener para componentes
         this.db.collection(componentsPath).onSnapshot(snapshot => {
             const components = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             dataStore.setComponents(components);
+            this.appInstance.render.renderBizuralChecklist(); // Força a renderização da lista de componentes
         }, error => console.error("Erro ao buscar componentes:", error));
 
         this.elements.loadingOverlay.classList.add('hidden');
