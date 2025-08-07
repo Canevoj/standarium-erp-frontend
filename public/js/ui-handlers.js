@@ -9,29 +9,23 @@ import { apiService } from './api-service.js';
 import { dataStore } from './data-store.js';
 import { utils } from './utils.js';
 
-
 const uiHandlers = {
-    elements: null, // Referência aos elementos DOM
-    appInstance: null, // Referência à instância principal do app (para navegação, etc.)
+    elements: null,
+    appInstance: null,
 
     init(elements, app) {
         this.elements = elements;
         this.appInstance = app;
-        // apiService.init(elements); // Não é mais necessário chamar init aqui no apiService se não for armazenar elementos genéricos
     },
 
-    /**
-     * Configura todos os event listeners para os elementos da UI.
-     */
     setupEventListeners() {
-        let isLoginMode = true; // Estado para alternar entre login e cadastro
+        let isLoginMode = true;
 
-        // Event Listeners de Autenticação
         this.elements.authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = this.elements.authForm.querySelector('#email').value;
             const password = this.elements.authForm.querySelector('#password').value;
-            this.elements.authError.textContent = ''; // Limpa mensagens de erro anteriores
+            this.elements.authError.textContent = '';
             this.elements.authSubmitBtn.disabled = true;
 
             try {
@@ -41,7 +35,7 @@ const uiHandlers = {
                     await firebaseService.signUp(email, password);
                 }
             } catch (error) {
-                this.elements.authError.textContent = error.message; // Exibe mensagem de erro do FirebaseService
+                this.elements.authError.textContent = error.message;
             } finally {
                 this.elements.authSubmitBtn.disabled = false;
             }
@@ -54,20 +48,17 @@ const uiHandlers = {
             this.elements.authSubmitBtn.textContent = isLoginMode ? 'Entrar' : 'Criar Conta';
             this.elements.authToggleText.textContent = isLoginMode ? 'Não tem uma conta?' : 'Já tem uma conta?';
             this.elements.authToggleBtn.textContent = isLoginMode ? 'Cadastre-se' : 'Faça Login';
-            this.elements.authError.textContent = ''; // Limpa erro ao alternar
+            this.elements.authError.textContent = '';
         });
 
-        // Event Listener para Logout
         this.elements.logoutBtn.addEventListener('click', () => {
             firebaseService.signOut();
         });
 
-        // Event Listeners da Sidebar e Navegação Mobile
         this.elements.sidebarToggle.addEventListener('click', () => {
             this.elements.sidebar.classList.toggle('collapsed');
             const icon = this.elements.sidebar.classList.contains('collapsed') ? 'chevrons-right' : 'chevrons-left';
             this.elements.sidebarToggle.innerHTML = `<i data-feather="${icon}" class="shrink-0"></i>`;
-            
         });
 
         this.elements.mobileMenuBtn.addEventListener('click', () => {
@@ -83,20 +74,18 @@ const uiHandlers = {
         this.elements.sidebarLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.appInstance.navigateTo(link.hash); // Usa o método navigateTo do app
+                this.appInstance.navigateTo(link.hash);
                 this.elements.sidebar.classList.remove('open');
                 this.elements.mobileOverlay.classList.add('hidden');
             });
         });
 
-        // Event Listeners da Página de Estoque
         this.elements.addProductBtn.addEventListener('click', () => this.showProductModal());
         this.elements.productModal.querySelector('#cancel-product-btn').addEventListener('click', () => this.hideProductModal());
         this.elements.productForm.addEventListener('submit', (e) => { e.preventDefault(); this.saveProduct(); });
         this.elements.productForm.querySelector('#status').addEventListener('change', (e) => this.toggleSaleFields(e.target.value));
         this.elements.productForm.querySelector('#type').addEventListener('change', (e) => this.toggleProductFields(e.target.value));
         
-        // CORREÇÃO AQUI: Passa o botão específico 'geminiDescBtn'
         this.elements.geminiDescBtn.addEventListener('click', () => this.generateDescription(this.elements.geminiDescBtn));
 
         this.elements.inventoryStatusFilter.addEventListener('change', () => this.appInstance.render.renderInventoryTable());
@@ -104,15 +93,13 @@ const uiHandlers = {
         this.elements.inventorySortBy.addEventListener('change', () => this.appInstance.render.renderInventoryTable());
         this.elements.inventorySortOrder.addEventListener('change', () => this.appInstance.render.renderInventoryTable());
 
-        // Event Listeners da Página de Serviços
         this.elements.addServiceBtn.addEventListener('click', () => this.showServiceModal());
         this.elements.serviceModal.querySelector('#cancel-service-btn').addEventListener('click', () => this.hideServiceModal());
         this.elements.serviceForm.addEventListener('submit', (e) => { e.preventDefault(); this.saveService(); });
 
-        // Event Listeners da Página de Relatórios
         this.elements.reportTypeFilter.addEventListener('change', () => this.appInstance.render.renderReportsPage());
         this.elements.exportBtn.addEventListener('click', () => this.elements.exportDropdown.classList.toggle('hidden'));
-        // Fechar dropdown ao clicar fora
+        
         document.addEventListener('click', (e) => {
             if (this.elements.exportBtn && !this.elements.exportBtn.contains(e.target) &&
                 this.elements.exportDropdown && !this.elements.exportDropdown.contains(e.target)) {
@@ -124,9 +111,7 @@ const uiHandlers = {
         this.elements.exportXlsxBtn.addEventListener('click', () => this.exportReports('xlsx'));
 
 
-        // Event Listeners da Página Dashboard
         this.elements.dashboardPeriodFilter.addEventListener('change', (e) => this.appInstance.render.renderDashboard(e.target.value));
-        // CORREÇÃO AQUI: Passa o botão específico 'generateInsightsBtn'
         this.elements.generateInsightsBtn.addEventListener('click', () => this.generateBusinessInsights(this.elements.generateInsightsBtn));
         
         this.elements.insightsContainer.addEventListener('click', (e) => {
@@ -135,26 +120,20 @@ const uiHandlers = {
             }
         });
 
-        // Event Listeners da Página Bizural (Montagem)
         this.elements.addComponentBtn.addEventListener('click', () => this.showComponentModal());
         this.elements.componentModal.querySelector('#cancel-component-btn').addEventListener('click', () => this.hideComponentModal());
         this.elements.componentForm.addEventListener('submit', (e) => { e.preventDefault(); this.saveComponent(); });
         this.elements.resetBizuralBtn.addEventListener('click', () => {
             this.elements.bizuralChecklistEl.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-            this.appInstance.render.calculateBizuralTotals(); // Recalcula totais
+            this.appInstance.render.calculateBizuralTotals();
         });
         this.elements.bizuralLaborInput.addEventListener('input', () => this.appInstance.render.calculateBizuralTotals());
     },
 
-    /**
-     * Exibe o modal de produto e preenche com dados se um produto for fornecido para edição.
-     * @param {object} [product=null] - Objeto produto para edição, ou null para adicionar novo.
-     */
     showProductModal(product = null) {
         const form = this.elements.productForm;
-        form.reset(); // Limpa o formulário
+        form.reset();
 
-        // Define a data de compra como a data atual por padrão para novos itens
         form.querySelector('#data_compra').value = new Date().toISOString().split('T')[0];
 
         if (product) {
@@ -176,25 +155,19 @@ const uiHandlers = {
             }
         } else {
             this.elements.productModalTitle.textContent = 'Adicionar Novo Item';
-            form.querySelector('#product-id').value = ''; // Limpa o ID para novo item
+            form.querySelector('#product-id').value = '';
         }
 
-        // Ajusta a visibilidade dos campos com base no tipo e status
         this.toggleProductFields(form.querySelector('#type').value);
         this.toggleSaleFields(form.querySelector('#status').value);
 
-        this.elements.productModal.classList.remove('hidden'); // Exibe o modal
+        this.elements.productModal.classList.remove('hidden');
     },
 
-    /** Oculta o modal de produto. */
     hideProductModal() {
         this.elements.productModal.classList.add('hidden');
     },
 
-    /**
-     * Alterna a visibilidade dos campos de venda com base no status do produto.
-     * @param {string} status - O status atual do produto.
-     */
     toggleSaleFields(status) {
         const saleFields = this.elements.productForm.querySelector('#sale-fields');
         if (status === 'VENDIDO') {
@@ -204,10 +177,6 @@ const uiHandlers = {
         }
     },
 
-    /**
-     * Alterna a visibilidade dos campos específicos para "Produto para Venda" vs "Consumo".
-     * @param {string} type - O tipo de item selecionado ('Produto para Venda' ou 'Consumo').
-     */
     toggleProductFields(type) {
         const fields = this.elements.productForm.querySelector('#product-for-sale-fields');
         const descField = this.elements.productForm.querySelector('#product-description-field');
@@ -220,7 +189,6 @@ const uiHandlers = {
         }
     },
 
-    /** Salva um produto (novo ou existente) no Firestore. */
     async saveProduct() {
         const form = this.elements.productForm;
         const id = form.querySelector('#product-id').value;
@@ -234,11 +202,10 @@ const uiHandlers = {
             PRECO_SUGERIDO: type === 'Produto para Venda' ? (parseFloat(form.querySelector('#preco_sugerido').value) || 0) : null,
             DATA_COMPRA: form.querySelector('#data_compra').value,
             METODO_COMPRA: form.querySelector('#metodo_compra').value,
-            STATUS: type === 'Produto para Venda' ? status : 'N/A', // Status é N/A para Consumo
+            STATUS: type === 'Produto para Venda' ? status : 'N/A',
             DESCRICAO: form.querySelector('#descricao').value,
         };
 
-        // Condicionalmente adiciona campos de venda se o status for 'VENDIDO' e tipo 'Produto para Venda'
         if (status === 'VENDIDO' && type === 'Produto para Venda') {
             productData.VALOR_VENDA = parseFloat(form.querySelector('#valor_venda').value) || 0;
             productData.DATA_VENDA = form.querySelector('#data_venda').value;
@@ -251,20 +218,15 @@ const uiHandlers = {
 
         try {
             await firebaseService.saveData('products', productData, id, form.querySelector('.btn-primary'));
-            this.hideProductModal(); // Oculta o modal após salvar
+            this.hideProductModal();
         } catch (error) {
             console.error("Erro ao salvar produto:", error);
-            // utils.showError já é chamado no firebaseService.saveData
         }
     },
 
-    /**
-     * Exibe o modal de serviço e preenche com dados se um serviço for fornecido para edição.
-     * @param {object} [service=null] - Objeto serviço para edição, ou null para adicionar novo.
-     */
     showServiceModal(service = null) {
         const form = this.elements.serviceForm;
-        form.reset(); // Limpa o formulário
+        form.reset();
 
         if (service) {
             this.elements.serviceModalTitle.textContent = 'Editar Serviço';
@@ -274,17 +236,15 @@ const uiHandlers = {
             form.querySelector('#service-description').value = service.DESCRICAO;
         } else {
             this.elements.serviceModalTitle.textContent = 'Adicionar Novo Serviço';
-            form.querySelector('#service-id').value = ''; // Limpa o ID para novo item
+            form.querySelector('#service-id').value = '';
         }
-        this.elements.serviceModal.classList.remove('hidden'); // Exibe o modal
+        this.elements.serviceModal.classList.remove('hidden');
     },
 
-    /** Oculta o modal de serviço. */
     hideServiceModal() {
         this.elements.serviceModal.classList.add('hidden');
     },
 
-    /** Salva um serviço (novo ou existente) no Firestore. */
     async saveService() {
         const form = this.elements.serviceForm;
         const id = form.querySelector('#service-id').value;
@@ -295,20 +255,15 @@ const uiHandlers = {
         };
         try {
             await firebaseService.saveData('services', serviceData, id, form.querySelector('.btn-primary'));
-            this.hideServiceModal(); // Oculta o modal após salvar
+            this.hideServiceModal();
         } catch (error) {
             console.error("Erro ao salvar serviço:", error);
-            // utils.showError já é chamado no firebaseService.saveData
         }
     },
 
-    /**
-     * Exibe o modal de componente e preenche com dados se um componente for fornecido para edição.
-     * @param {object} [component=null] - Objeto componente para edição, ou null para adicionar novo.
-     */
     showComponentModal(component = null) {
         const form = this.elements.componentForm;
-        form.reset(); // Limpa o formulário
+        form.reset();
 
         if (component) {
             this.elements.componentModalTitle.textContent = 'Editar Componente';
@@ -317,17 +272,15 @@ const uiHandlers = {
             form.querySelector('#component-cost').value = component.cost;
         } else {
             this.elements.componentModalTitle.textContent = 'Adicionar Componente';
-            form.querySelector('#component-id').value = ''; // Limpa o ID para novo item
+            form.querySelector('#component-id').value = '';
         }
-        this.elements.componentModal.classList.remove('hidden'); // Exibe o modal
+        this.elements.componentModal.classList.remove('hidden');
     },
 
-    /** Oculta o modal de componente. */
     hideComponentModal() {
         this.elements.componentModal.classList.add('hidden');
     },
 
-    /** Salva um componente (novo ou existente) no Firestore. */
     async saveComponent() {
         const form = this.elements.componentForm;
         const id = form.querySelector('#component-id').value;
@@ -337,37 +290,27 @@ const uiHandlers = {
         };
         try {
             await firebaseService.saveData('components', componentData, id, form.querySelector('.btn-primary'));
-            this.hideComponentModal(); // Oculta o modal após salvar
+            this.hideComponentModal();
         } catch (error) {
             console.error("Erro ao salvar componente:", error);
-            // utils.showError já é chamado no firebaseService.saveData
         }
     },
 
-    /**
-     * Gera uma descrição de produto usando a API Gemini.
-     * @param {HTMLElement} button - O botão que acionou a geração (para controle de estado).
-     */
     async generateDescription(button) {
         const productName = this.elements.productForm.querySelector('#produto').value;
         if (!productName) {
-            utils.showConfirmation("Por favor, insira o nome do produto primeiro.", () => {}, this.elements); // Passa 'elements' para showConfirmation
+            utils.showConfirmation("Por favor, insira o nome do produto primeiro.", () => {}, this.elements);
             return;
         }
 
         const prompt = `Crie uma descrição de venda curta, atraente e profissional para o seguinte produto de eletrônicos: "${productName}". Foque nos benefícios e principais características em 2 ou 3 parágrafos. Use uma linguagem vendedora, mas honesta.`;
-        const description = await apiService.callGeminiAPI(prompt, button); // Passa o botão para apiService
-
-        this.elements.productForm.querySelector('#descricao').value = description;
+        const description = await apiService.callGeminiAPI(prompt, button);
+        if (description) {
+            this.elements.productForm.querySelector('#descricao').value = description;
+        }
     },
 
-    /**
-     * Gera insights de negócios usando a API Gemini.
-     * @param {HTMLElement} button - O botão que acionou a geração (para controle de estado).
-     */
     async generateBusinessInsights(button) {
-        // const button = this.elements.generateInsightsBtn; // Removido, pois o botão é passado como argumento
-
         this.elements.insightsContainer.classList.remove('hidden');
         this.elements.insightsContainer.innerHTML = '<div class="flex justify-center items-center p-8"><div class="spinner"></div></div>';
 
@@ -377,30 +320,29 @@ const uiHandlers = {
         const vendidos = this.elements.metricVendidos.textContent;
 
         const prompt = `Sou dono de uma pequena empresa de revenda de eletrônicos. No período de "${period}", estes foram meus resultados: Faturamento de ${faturamento}, Lucro de ${lucro}, e ${vendidos} itens vendidos. Com base nesses números, gere uma análise de negócios concisa para mim. Destaque pontos positivos, possíveis pontos de atenção e me dê 3 sugestões práticas e acionáveis para melhorar meus resultados no próximo período. Seja direto e use um tom de consultor de negócios. Formate a resposta em markdown, usando títulos com ** para negrito.`;
-        const insights = await apiService.callGeminiAPI(prompt, button); // Passa o botão para apiService
+        const insights = await apiService.callGeminiAPI(prompt, button);
 
-        // Formata o Markdown para HTML
-        let formattedInsights = insights
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-sky-400">$1</strong>') // Negrito
-            .replace(/\*(.*?)\*/g, '<em>$1</em>') // Itálico
-            // Adiciona quebras de linha para simular parágrafos para títulos
-            .replace(/^(#+)\s*(.*)/gm, (match, hashes, content) => `<h${hashes.length + 2} class="font-bold mt-4 mb-2">${content}</h${hashes.length + 2}>`)
-            .replace(/\n- /g, '<br>• ') // Listas
-            .replace(/\n/g, '<br>'); // Novas linhas
+        if (insights) {
+            let formattedInsights = insights
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-sky-400">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^(#+)\s*(.*)/gm, (match, hashes, content) => `<h${hashes.length + 2} class="font-bold mt-4 mb-2">${content}</h${hashes.length + 2}>`)
+                .replace(/\n- /g, '<br>• ')
+                .replace(/\n/g, '<br>');
 
-        this.elements.insightsContainer.innerHTML = `<button id="close-insights-btn" class="absolute top-2 right-2 text-gray-400 hover:text-white p-1 rounded-full"><i data-feather="x" class="h-4 w-4"></i></button><div class="p-4">${formattedInsights}</div>`;
+            this.elements.insightsContainer.innerHTML = `<button id="close-insights-btn" class="absolute top-2 right-2 text-gray-400 hover:text-white p-1 rounded-full"><i data-feather="x" class="h-4 w-4"></i></button><div class="p-4">${formattedInsights}</div>`;
+        } else {
+             // Caso a IA não retorne nada ou ocorra um erro, mostra uma mensagem amigável
+            this.elements.insightsContainer.innerHTML = `<button id="close-insights-btn" class="absolute top-2 right-2 text-gray-400 hover:text-white p-1 rounded-full"><i data-feather="x" class="h-4 w-4"></i></button><div class="p-4 text-red-400">Desculpe, a IA não conseguiu gerar a análise. Tente novamente.</div>`;
+        }
     },
 
-    /**
-     * Exporta os dados dos relatórios para diferentes formatos (CSV, PDF, XLSX).
-     * @param {string} format - O formato de exportação ('csv', 'pdf', 'xlsx').
-     */
     exportReports(format) {
         const reportType = this.elements.reportTypeFilter.value;
-        const { data, headers } = utils.getReportData(reportType, dataStore.getProducts()); // Pega dados e cabeçalhos
+        const { data, headers } = utils.getReportData(reportType, dataStore.getProducts());
 
         if (data.length === 0) {
-            utils.showConfirmation("Nenhum dado para exportar para este relatório.", () => {}, this.elements); // Passa 'elements'
+            utils.showConfirmation("Nenhum dado para exportar para este relatório.", () => {}, this.elements);
             return;
         }
 
@@ -410,7 +352,7 @@ const uiHandlers = {
         if (format === 'pdf') utils.exportToPDF(data, headers, `Relatório de ${reportType}`, this.elements.printArea);
         if (format === 'xlsx') utils.exportToXLSX(data, headers, `${fileName}.xlsx`);
 
-        this.elements.exportDropdown.classList.add('hidden'); // Esconde o dropdown após a exportação
+        this.elements.exportDropdown.classList.add('hidden');
     },
 };
 
