@@ -30,6 +30,8 @@ const renderFunctions = {
         this.renderDashboard(dashboardPeriod);
         this.renderInventoryTable();
         this.renderReportsPage();
+        this.renderServicesTable(); // Adiciona a renderização da tabela de serviços
+        this.renderBizuralChecklist(); // Adiciona a renderização do checklist de montagem
         // Garante que os ícones do Feather Icons sejam substituídos após a renderização
         if (window.feather) feather.replace();
     },
@@ -157,9 +159,15 @@ const renderFunctions = {
                 <td class="p-4 text-right font-bold text-green-400">${p.STATUS === 'VENDIDO' && !isExpense ? utils.formatCurrency(p.VALOR_VENDA) : '---'}</td>
                 <td class="p-4 text-center space-x-2">
                     <button class="btn-edit btn btn-sm bg-orange-500 hover:bg-orange-600 text-white">Gerenciar</button>
+                    <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white">Excluir</button>
                 </td>`;
-            // Adiciona listener para o botão "Gerenciar"
+            // Adiciona listeners para os botões "Gerenciar" e "Excluir"
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showProductModal(p));
+            row.querySelector('.btn-delete').addEventListener('click', () => {
+                utils.showConfirmation("Deseja realmente excluir este item?", async () => {
+                    await firebaseService.deleteData('products', p.id);
+                }, this.elements);
+            });
             this.elements.inventoryTableBody.appendChild(row);
         });
     },
@@ -168,19 +176,16 @@ const renderFunctions = {
      * Renderiza a tabela de serviços.
      */
     renderServicesTable() {
-        // Verifica se o elemento existe antes de tentar manipular
         if (!this.elements.servicesTableBody) return;
 
-        this.elements.servicesTableBody.innerHTML = ''; // Limpa o corpo da tabela
-        const services = dataStore.getServices(); // Pega os serviços do dataStore
+        this.elements.servicesTableBody.innerHTML = '';
+        const services = dataStore.getServices();
 
-        // Exibe mensagem se não houver serviços
         if (services.length === 0) {
             this.elements.servicesTableBody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-500">Nenhum serviço cadastrado.</td></tr>`;
             return;
         }
 
-        // Popula a tabela com os serviços (ordenados por nome)
         [...services].sort((a, b) => (a.NOME || '').localeCompare(b.NOME || '')).forEach(s => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-700/50 text-sm';
@@ -192,12 +197,11 @@ const renderFunctions = {
                     <button class="btn-edit btn btn-sm bg-orange-500 hover:bg-orange-600 text-white">Editar</button>
                     <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white">Excluir</button>
                 </td>`;
-            // Adiciona listeners para os botões "Editar" e "Excluir"
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showServiceModal(s));
             row.querySelector('.btn-delete').addEventListener('click', () => {
                 utils.showConfirmation("Deseja realmente excluir este item?", async () => {
                     await firebaseService.deleteData('services', s.id);
-                });
+                }, this.elements);
             });
             this.elements.servicesTableBody.appendChild(row);
         });
@@ -208,28 +212,23 @@ const renderFunctions = {
      */
     renderReportsPage() {
         const reportType = this.elements.reportTypeFilter.value;
-        const { data, headers } = utils.getReportData(reportType, dataStore.getProducts()); // Pega dados e cabeçalhos
+        const { data, headers } = utils.getReportData(reportType, dataStore.getProducts());
 
-        // Popula o cabeçalho da tabela de relatórios
         this.elements.reportTableHead.innerHTML = `<tr>${headers.map(h => `<th class="p-4 text-left text-xs uppercase text-gray-400">${h}</th>`).join('')}</tr>`;
-        this.elements.reportTableBody.innerHTML = ''; // Limpa o corpo da tabela
+        this.elements.reportTableBody.innerHTML = '';
 
-        // Exibe mensagem se não houver dados para o relatório
         if (data.length === 0) {
             this.elements.reportTableBody.innerHTML = `<tr><td colspan="${headers.length}" class="text-center p-8 text-gray-500">Nenhum registro para este relatório.</td></tr>`;
             return;
         }
 
-        // Popula a tabela com os dados do relatório
         data.forEach(rowData => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-700/50 text-sm';
             let cellHTML = '';
             headers.forEach(headerKey => {
-                // Encontra a chave correspondente no rowData, normalizando para comparação (ex: "Data Compra" vs "DATA_COMPRA")
                 const key = Object.keys(rowData).find(k => utils.normalizeHeader(k) === utils.normalizeHeader(headerKey));
                 let cellData = rowData[key];
-                // Formata valores numéricos como moeda, exceto para a coluna 'Produto'
                 if (typeof cellData === 'number' && utils.normalizeHeader(headerKey) !== 'produto') {
                     cellData = utils.formatCurrency(cellData);
                 }
@@ -242,18 +241,16 @@ const renderFunctions = {
 
     /**
      * Renderiza o gráfico de Vendas vs Custos por Mês.
-     * @param {Array<object>} products - A lista de produtos para gerar o gráfico.
      */
     renderSalesCostChart(products) {
-        if (!this.elements.salesCostChartCanvas) return; // Verifica se o canvas existe
+        if (!this.elements.salesCostChartCanvas) return;
 
         const ctx = this.elements.salesCostChartCanvas.getContext('2d');
-        if (this.charts.salesCost) this.charts.salesCost.destroy(); // Destrói o gráfico anterior, se existir
+        if (this.charts.salesCost) this.charts.salesCost.destroy();
 
-        // Agrupa custos e vendas por mês
         const monthlyData = products.reduce((acc, p) => {
             if (p.DATA_COMPRA) {
-                const month = p.DATA_COMPRA.substring(0, 7); // Ex: "AAAA-MM"
+                const month = p.DATA_COMPRA.substring(0, 7);
                 if (!acc[month]) acc[month] = { costs: 0, sales: 0 };
                 acc[month].costs += p.CUSTO || 0;
             }
@@ -265,9 +262,8 @@ const renderFunctions = {
             return acc;
         }, {});
 
-        const sortedMonths = Object.keys(monthlyData).sort(); // Ordena os meses
+        const sortedMonths = Object.keys(monthlyData).sort();
 
-        // Cria o novo gráfico de barras
         this.charts.salesCost = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -276,30 +272,30 @@ const renderFunctions = {
                     {
                         label: 'Vendas',
                         data: sortedMonths.map(m => monthlyData[m].sales),
-                        backgroundColor: '#0ea5e9', // Cor azul
+                        backgroundColor: '#0ea5e9',
                     },
                     {
                         label: 'Custos',
                         data: sortedMonths.map(m => monthlyData[m].costs),
-                        backgroundColor: '#f97316', // Cor laranja
+                        backgroundColor: '#f97316',
                     }
                 ]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // Permite que o gráfico se ajuste ao contêiner
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: { color: '#9ca3af' } // Cor do texto do eixo Y
+                        ticks: { color: '#9ca3af' }
                     },
                     x: {
-                        ticks: { color: '#9ca3af' } // Cor do texto do eixo X
+                        ticks: { color: '#9ca3af' }
                     }
                 },
                 plugins: {
                     legend: {
-                        labels: { color: '#d1d5db' } // Cor do texto da legenda
+                        labels: { color: '#d1d5db' }
                     }
                 }
             }
@@ -308,15 +304,13 @@ const renderFunctions = {
 
     /**
      * Renderiza o gráfico de Vendas por Método.
-     * @param {Array<object>} data - A lista de produtos (já filtrados) para gerar o gráfico.
      */
     renderSalesByMethodChart(data) {
-        if (!this.elements.salesByMethodChartCanvas) return; // Verifica se o canvas existe
+        if (!this.elements.salesByMethodChartCanvas) return;
 
         const ctx = this.elements.salesByMethodChartCanvas.getContext('2d');
-        if (this.charts.salesByMethod) this.charts.salesByMethod.destroy(); // Destrói o gráfico anterior, se existir
+        if (this.charts.salesByMethod) this.charts.salesByMethod.destroy();
 
-        // Agrupa vendas por método de venda
         const methodData = data.reduce((acc, p) => {
             const method = p.METODO_VENDA || 'N/A';
             if (!acc[method]) acc[method] = 0;
@@ -324,24 +318,23 @@ const renderFunctions = {
             return acc;
         }, {});
 
-        // Cria o novo gráfico de rosca (doughnut)
         this.charts.salesByMethod = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: Object.keys(methodData),
                 datasets: [{
                     data: Object.values(methodData),
-                    backgroundColor: ['#0ea5e9', '#f97316', '#10b981', '#6b7280'], // Cores para os segmentos
-                    borderWidth: 0 // Remove as bordas dos segmentos
+                    backgroundColor: ['#0ea5e9', '#f97316', '#10b981', '#6b7280'],
+                    borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // Permite que o gráfico se ajuste ao contêiner
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom', // Posição da legenda
-                        labels: { color: '#d1d5db' } // Cor do texto da legenda
+                        position: 'bottom',
+                        labels: { color: '#d1d5db' }
                     }
                 }
             }
@@ -352,15 +345,13 @@ const renderFunctions = {
      * Renderiza o checklist de componentes para a calculadora Bizural.
      */
     renderBizuralChecklist() {
-        if (!this.elements.bizuralChecklistEl) return; // Verifica se o elemento existe
+        if (!this.elements.bizuralChecklistEl) return;
 
-        this.elements.bizuralChecklistEl.innerHTML = ''; // Limpa o checklist
-        const components = dataStore.getComponents(); // Pega os componentes do dataStore
+        this.elements.bizuralChecklistEl.innerHTML = '';
+        const components = dataStore.getComponents();
 
-        // Ordena os componentes alfabeticamente
         const sortedComponents = [...components].sort((a, b) => (a.component || '').localeCompare(b.component || ''));
 
-        // Popula o checklist com os componentes
         sortedComponents.forEach(item => {
             const el = document.createElement('div');
             el.className = 'flex items-center justify-between p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700';
@@ -374,7 +365,6 @@ const renderFunctions = {
                     <button class="btn-edit btn-icon" data-id="${item.id}" data-name="${item.component}" data-cost="${item.cost}"><i data-feather="edit-2" class="h-4 w-4"></i></button>
                     <button class="btn-delete btn-icon" data-id="${item.id}"><i data-feather="trash-2" class="h-4 w-4 text-red-500"></i></button>
                 </div>`;
-            // Adiciona listeners para os checkboxes e botões de edição/exclusão
             el.querySelector('input[type="checkbox"]').addEventListener('change', () => this.calculateBizuralTotals());
             el.querySelector('.btn-edit').addEventListener('click', (e) => {
                 const id = e.currentTarget.dataset.id;
@@ -386,30 +376,26 @@ const renderFunctions = {
                 const id = e.currentTarget.dataset.id;
                 utils.showConfirmation("Deseja realmente excluir este componente?", async () => {
                     await firebaseService.deleteData('components', id);
-                });
+                }, this.elements);
             });
             this.elements.bizuralChecklistEl.appendChild(el);
         });
 
-        // Recalcula os totais após a renderização (para refletir o estado inicial dos checkboxes)
         this.calculateBizuralTotals();
-        if (window.feather) feather.replace(); // Atualiza os ícones
+        if (window.feather) feather.replace();
     },
 
     /**
      * Calcula e exibe o custo total dos componentes selecionados e o preço sugerido de venda para o Bizural.
      */
     calculateBizuralTotals() {
-        if (!this.elements.bizuralChecklistEl) return; // Verifica se o elemento existe
+        if (!this.elements.bizuralChecklistEl) return;
 
-        // Soma o custo dos checkboxes selecionados
         let cost = Array.from(this.elements.bizuralChecklistEl.querySelectorAll('input:checked')).reduce((sum, el) => sum + parseFloat(el.dataset.cost), 0);
-        const labor = parseFloat(this.elements.bizuralLaborInput.value) || 0; // Pega a taxa de montagem
+        const labor = parseFloat(this.elements.bizuralLaborInput.value) || 0;
 
-        // Calcula o preço sugerido (custo + mão de obra) com um lucro de 30%
         const suggestedPrice = (cost + labor) * 1.3;
 
-        // Atualiza os elementos DOM com os totais formatados
         this.elements.bizuralCostEl.textContent = utils.formatCurrency(cost);
         this.elements.bizuralPriceEl.textContent = utils.formatCurrency(suggestedPrice);
     },
