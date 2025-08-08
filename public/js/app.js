@@ -38,7 +38,7 @@ const app = {
         // Passa as referências de elementos e o objeto app para renderFunctions
         renderFunctions.init(this.elements, this);
         // Passa as referências de elementos e o objeto app para dataStore
-        dataStore.init(this.elements, this);
+        // dataStore.init(this.elements, this);
 
 
         // Configura os event listeners
