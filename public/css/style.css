@@ -146,7 +146,7 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600; /* Peso da fonte */
+    font-weight: 500; /* Peso da fonte */
     padding: 0.6rem 1.2rem; /* Preenchimento interno */
     border-radius: 0.5rem; /* Borda arredondada */
     transition: all 0.2s; /* Animação suave em todas as propriedades */
