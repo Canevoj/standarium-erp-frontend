@@ -15,7 +15,7 @@ const domManager = {
             <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                 <h1 class="text-3xl font-bold">Dashboard</h1>
                 <div class="flex items-center gap-4">
-                    <button id="generate-insights-btn" class="btn gemini-btn font-bold">✨ Gerar Análise</button>
+                    <button id="generate-insights-btn" class="btn gemini-btn font-bold">✨ Gerar Análise de Negócios</button>
                     <div class="w-48">
                         <select id="dashboard-period-filter" class="form-select text-sm">
                             <option value="all_time">Todo o Período</option>
