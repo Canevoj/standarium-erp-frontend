@@ -37,7 +37,7 @@ const apiService = {
             }
         } catch (error) {
             console.error("Erro na chamada da API Gemini (via backend):", error);
-            // utils.showError já está sendo chamado no ui-handlers
+            // Retorna nulo para que o ui-handlers possa tratar
             return null;
         } finally {
             callingButton.disabled = false;
@@ -48,11 +48,13 @@ const apiService = {
      * Chama a API Gemini com um histórico de conversa.
      */
     async callGeminiAPIWithChat(history, callingButton) {
-        // Substitua pela URL do seu backend se tiver um endpoint de chat diferente
         const backendUrl = 'https://standarium-erp-api.onrender.com/api/generate-chat';
         
         try {
-            callingButton.disabled = true;
+            if (callingButton) {
+                callingButton.disabled = true;
+            }
+
             const response = await fetch(backendUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
