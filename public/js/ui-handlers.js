@@ -4,7 +4,6 @@
  * e gerenciar as interações da interface do usuário (UI).
  */
 
-import { firebaseService } from './firebase-service.js';
 import { apiService } from './api-service.js';
 import { dataStore } from './data-store.js';
 import { utils } from './utils.js';
