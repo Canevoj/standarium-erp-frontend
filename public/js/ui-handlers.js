@@ -130,6 +130,18 @@ const uiHandlers = {
             this.appInstance.render.calculateBizuralTotals();
         });
         this.elements.bizuralLaborInput.addEventListener('input', () => this.appInstance.render.calculateBizuralTotals());
+
+        // Pega os elementos do novo modal (eles não estão no cache `this.elements`)
+const saleModal = document.getElementById('sale-modal');
+const saleForm = document.getElementById('sale-form');
+const cancelSaleBtn = document.getElementById('cancel-sale-btn');
+
+// Adiciona os listeners
+cancelSaleBtn.addEventListener('click', () => this.hideSaleModal());
+saleForm.addEventListener('submit', (e) => { 
+    e.preventDefault(); 
+    this.saveSale(); 
+});
     },
 
     showProductModal(product = null) {
