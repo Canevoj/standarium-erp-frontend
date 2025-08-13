@@ -131,9 +131,11 @@ const uiHandlers = {
         this.elements.bizuralLaborInput.addEventListener('input', () => this.appInstance.render.calculateBizuralTotals());
 
         // Pega os elementos do novo modal (eles não estão no cache `this.elements`)
-const saleModal = document.getElementById('sale-modal');
-const saleForm = document.getElementById('sale-form');
-const cancelSaleBtn = document.getElementById('cancel-sale-btn');
+this.elements.cancelSaleBtn.addEventListener('click', () => this.hideSaleModal());
+this.elements.saleForm.addEventListener('submit', (e) => { 
+    e.preventDefault(); 
+    this.saveSale(); 
+});
 
 // Adiciona os listeners
 cancelSaleBtn.addEventListener('click', () => this.hideSaleModal());
