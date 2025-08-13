@@ -15,7 +15,7 @@ const domManager = {
             <div class="flex flex-wrap gap-4 justify-between items-center mb-6">
                 <h1 class="text-3xl font-bold">Dashboard</h1>
                 <div class="flex items-center gap-4">
-                    <button id="generate-insights-btn" class="btn gemini-btn font-bold">✨ Gerar Análise de Negócios</button>
+                    <button id="generate-insights-btn" class="btn gemini-btn font-bold">✨ Gerar Análise</button>
                     <div class="w-48">
                         <select id="dashboard-period-filter" class="form-select text-sm">
                             <option value="all_time">Todo o Período</option>
@@ -96,7 +96,8 @@ const domManager = {
                         <tr>
                             <th class="p-4">Produto</th>
                             <th class="p-4">Status</th>
-                            <th class="p-4 text-right">Custo</th>
+                            <th class="p-4 text-center">Quantidade</th>
+                            <th class="p-4 text-right">Custo Unitário</th>
                             <th class="p-4 text-right">Preço Sugerido</th>
                             <th class="p-4 text-center">Data Compra</th>
                             <th class="p-4 text-right">Venda Final</th>
@@ -207,7 +208,11 @@ const domManager = {
                         <fieldset class="border border-gray-600 p-3 rounded-lg">
                             <legend class="text-sm px-2 text-gray-400">Detalhes da Compra</legend>
                             <div class="space-y-4">
-                                <label>Custo de Aquisição
+                                <!-- Adicionado campo de quantidade -->
+                                <label>Quantidade
+                                    <input type="number" step="1" id="quantidade" class="form-input" value="1" required>
+                                </label>
+                                <label>Custo de Aquisição (Total)
                                     <input type="number" step="0.01" id="custo" class="form-input" required>
                                 </label>
                                 <label>Data da Compra
@@ -227,7 +232,7 @@ const domManager = {
                             <fieldset class="border border-gray-600 p-3 rounded-lg">
                                 <legend class="text-sm px-2 text-gray-400">Detalhes de Venda</legend>
                                 <div class="space-y-4">
-                                    <label>Preço Sugerido de Venda
+                                    <label>Preço Sugerido de Venda (Unitário)
                                         <input type="number" step="0.01" id="preco_sugerido" class="form-input">
                                     </label>
                                     <label>Status do Produto
@@ -238,7 +243,7 @@ const domManager = {
                                         </select>
                                     </label>
                                     <div id="sale-fields" class="hidden space-y-4 border-t border-dashed border-sky-500 pt-4 mt-4">
-                                        <label>Valor Final da Venda
+                                        <label>Valor Final da Venda (Total)
                                             <input type="number" step="0.01" id="valor_venda" class="form-input">
                                         </label>
                                         <label>Data da Venda
@@ -354,7 +359,7 @@ const domManager = {
             mobileMenuBtn: document.getElementById('mobile-menu-btn'),
             mobileOverlay: document.getElementById('mobile-overlay'),
             sidebarLinks: document.querySelectorAll('.sidebar-link'),
-            logoutBtn: document.getElementById('logout-btn'), // Adicionado o botão de logout
+            logoutBtn: document.getElementById('logout-btn'),
 
             // Páginas de conteúdo
             pages: document.querySelectorAll('.page'),
@@ -380,9 +385,9 @@ const domManager = {
             inventorySortBy: document.getElementById('inventory-sort-by'),
             inventorySortOrder: document.getElementById('inventory-sort-order'),
             productModal: document.getElementById('product-modal'),
-            productModalTitle: document.getElementById('product-modal-title'), // ID atualizado
+            productModalTitle: document.getElementById('product-modal-title'),
             productForm: document.getElementById('product-form'),
-            geminiDescBtn: document.getElementById('gemini-desc-btn'), // Botão Gemini
+            geminiDescBtn: document.getElementById('gemini-desc-btn'),
 
             // Serviços
             addServiceBtn: document.getElementById('add-service-btn'),
