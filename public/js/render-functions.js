@@ -5,55 +5,40 @@
  */
 
 import { dataStore } from './data-store.js';
-import { uiHandlers } from './ui-handlers.js'; // Para acessar showProductModal, etc.
-import { utils } from './utils.js'; // Para funções utilitárias como formatCurrency
+import { uiHandlers } from './ui-handlers.js';
+import { utils } from './utils.js';
 
 const renderFunctions = {
-    elements: null, // Referência aos elementos DOM
-    appInstance: null, // Referência à instância principal do app (para navegação, etc.)
-    charts: {}, // Armazena instâncias de gráficos Chart.js
+    elements: null,
+    appInstance: null,
+    charts: {},
 
     init(elements, app) {
         this.elements = elements;
         this.appInstance = app;
-        // Copia a referência do charts para o objeto renderFunctions
         this.charts = app.charts;
     },
 
-    /**
-     * Renderiza todas as partes da UI que dependem de mudanças nos dados.
-     * Chamado após atualizações dos dados do Firestore.
-     */
     renderAll() {
-        // Pega o período do filtro do dashboard. Se não houver filtro, usa 'all_time'.
         const dashboardPeriod = this.elements.dashboardPeriodFilter ? this.elements.dashboardPeriodFilter.value : 'all_time';
         this.renderDashboard(dashboardPeriod);
         this.renderInventoryTable();
         this.renderReportsPage();
-        this.renderServicesTable(); // Adiciona a renderização da tabela de serviços
-        this.renderBizuralChecklist(); // Adiciona a renderização do checklist de montagem
-        // Garante que os ícones do Feather Icons sejam substituídos após a renderização
+        this.renderServicesTable();
+        this.renderBizuralChecklist();
         if (window.feather) feather.replace();
     },
 
-    /**
-     * Renderiza o dashboard com base nos produtos vendidos e no período selecionado.
-     * @param {string} period - Período para filtrar os dados ('all_time', 'this_month', 'last_30_days').
-     */
     renderDashboard(period) {
         const now = new Date();
-        const products = dataStore.getProducts(); // Pega os produtos do dataStore
+        const products = dataStore.getProducts();
 
-        // Filtra produtos vendidos com base no período
         const filteredProducts = products.filter(p => {
-            // Apenas produtos para venda e com status 'VENDIDO'
             if (p.TIPO !== 'Produto para Venda' || !p.STATUS || p.STATUS !== 'VENDIDO') return false;
-            // Converte a data de venda para objeto Date
             const saleDate = p.DATA_VENDA ? new Date(p.DATA_VENDA + 'T00:00:00') : null;
-            if (!saleDate) return false; // Ignora se não houver data de venda
+            if (!saleDate) return false;
 
-            // Lógica de filtragem por período
-            if (period === 'all_time') return true; // Todos os tempos
+            if (period === 'all_time') return true;
             if (period === 'last_30_days') {
                 const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                 return saleDate >= thirtyDaysAgo;
@@ -61,46 +46,37 @@ const renderFunctions = {
             if (period === 'this_month') {
                 return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
             }
-            return true; // Caso padrão, deve cobrir 'all_time'
+            return true;
         });
 
-        // Calcula métricas
         const totalProfit = filteredProducts.reduce((acc, p) => acc + ((p.VALOR_VENDA || 0) - (p.CUSTO || 0)), 0);
         const totalRevenue = filteredProducts.reduce((acc, p) => acc + (p.VALOR_VENDA || 0), 0);
 
-        // Calcula valor e custo do estoque atual (apenas produtos para venda em estoque)
         const stockProducts = products.filter(p => p.TIPO === 'Produto para Venda' && p.STATUS !== 'VENDIDO');
         const stockValue = stockProducts.reduce((acc, p) => acc + (p.PRECO_SUGERIDO || 0) * (p.QUANTIDADE || 1), 0);
-        const stockCost = stockProducts.reduce((acc, p) => acc + (p.CUSTO || 0), 0);
+        const stockCost = stockProducts.reduce((acc, p) => acc + (p.CUSTO_TOTAL || 0), 0);
 
-        // Atualiza os elementos DOM com as métricas
         this.elements.metricFaturamento.textContent = utils.formatCurrency(totalRevenue);
         this.elements.metricLucro.textContent = utils.formatCurrency(totalProfit);
         this.elements.metricEstoque.textContent = utils.formatCurrency(stockValue);
         this.elements.metricCustoEstoque.innerHTML = `Custo: <span class="text-gray-400">${utils.formatCurrency(stockCost)}</span>`;
         this.elements.metricVendidos.textContent = filteredProducts.length;
 
-        // Renderiza os gráficos do dashboard
-        this.renderSalesCostChart(products); // Usa todos os produtos para o gráfico de vendas vs custos
-        this.renderSalesByMethodChart(filteredProducts); // Usa produtos filtrados para vendas por método
+        this.renderSalesCostChart(products);
+        this.renderSalesByMethodChart(filteredProducts);
 
-        // Oculta e limpa o container de insights ao re-renderizar o dashboard
         this.elements.insightsContainer.classList.add('hidden');
         this.elements.insightsContainer.innerHTML = '';
     },
 
-    /**
-     * Renderiza a tabela de inventário com base nos filtros e ordenação.
-     */
     renderInventoryTable() {
         const statusFilter = this.elements.inventoryStatusFilter.value;
         const dateFilter = this.elements.inventoryDateFilter.value;
         const sortBy = this.elements.inventorySortBy.value;
         const sortOrder = this.elements.inventorySortOrder.value;
 
-        let items = [...dataStore.getProducts()]; // Pega uma cópia dos produtos do dataStore
+        let items = [...dataStore.getProducts()];
 
-        // Aplica filtro por status/tipo
         if (statusFilter !== 'all') {
             if (statusFilter === 'Consumo') {
                 items = items.filter(p => p.TIPO === 'Consumo');
@@ -108,38 +84,32 @@ const renderFunctions = {
                 items = items.filter(p => p.STATUS === statusFilter && p.TIPO === 'Produto para Venda');
             }
         }
-        // Aplica filtro por data de compra
         if (dateFilter) {
             items = items.filter(p => p.DATA_COMPRA === dateFilter);
         }
 
-        // Ordena os itens
         items.sort((a, b) => {
             let valA, valB;
             if (sortBy === 'date') {
-                valA = new Date(a.DATA_COMPRA + 'T00:00:00'); // Garante comparação de data
+                valA = new Date(a.DATA_COMPRA + 'T00:00:00');
                 valB = new Date(b.DATA_COMPRA + 'T00:00:00');
-            } else { // sortBy === 'cost'
-                valA = (a.CUSTO || 0) / (a.QUANTIDADE || 1); // Ordena por custo unitário
-                valB = (b.CUSTO || 0) / (b.QUANTIDADE || 1);
+            } else {
+                valA = (a.CUSTO_TOTAL || 0) / (a.QUANTIDADE || 1);
+                valB = (b.CUSTO_TOTAL || 0) / (b.QUANTIDADE || 1);
             }
             return sortOrder === 'asc' ? valA - valB : valB - valA;
         });
 
-        // Limpa o corpo da tabela
         this.elements.inventoryTableBody.innerHTML = '';
 
-        // Exibe mensagem se não houver itens
         if (items.length === 0) {
             this.elements.inventoryTableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-500">Nenhum item encontrado.</td></tr>`;
             return;
         }
 
-        // Popula a tabela com os itens filtrados e ordenados
         items.forEach(p => {
             const isExpense = p.TIPO === 'Consumo';
             const status = p.STATUS || 'EM BRANCO';
-            // Mapeamento de classes CSS para diferentes status
             const statusMap = {
                 'EM ESTOQUE': 'bg-sky-500/10 text-sky-400',
                 'EM TRÂNSITO': 'bg-yellow-500/10 text-yellow-400',
@@ -151,8 +121,8 @@ const renderFunctions = {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-700/50 text-sm';
             
-            const custoUnitario = (p.CUSTO || 0) / (p.QUANTIDADE || 1);
-            const precoSugeridoUnitario = (p.PRECO_SUGERIDO || 0);
+            const custoUnitario = (p.CUSTO_TOTAL || 0) / (p.QUANTIDADE || 1);
+            const precoSugeridoUnitario = p.PRECO_SUGERIDO || 0;
 
             row.innerHTML = `
                 <td class="p-4 font-medium">${p.PRODUTO}</td>
@@ -166,7 +136,6 @@ const renderFunctions = {
                     <button class="btn-edit btn btn-sm bg-orange-500 hover:bg-orange-600 text-white">Gerenciar</button>
                     <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white"><i data-feather="trash-2" class="h-4 w-4"></i></button>
                 </td>`;
-            // Adiciona listener para o botão "Gerenciar"
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showProductModal(p));
             row.querySelector('.btn-delete').addEventListener('click', () => {
                 utils.showConfirmation("Deseja realmente excluir este item?", async () => {
@@ -177,9 +146,6 @@ const renderFunctions = {
         });
     },
 
-    /**
-     * Renderiza a tabela de serviços.
-     */
     renderServicesTable() {
         if (!this.elements.servicesTableBody) return;
 
@@ -203,7 +169,7 @@ const renderFunctions = {
                     <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white"><i data-feather="trash-2" class="h-4 w-4"></i></button>
                 </td>`;
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showServiceModal(s));
-            row.querySelector('.btn-delete').addEventListener('click', () => {
+            row.querySelector('.btn-delete').addEventListener('click', (e) => {
                 utils.showConfirmation("Deseja realmente excluir este item?", async () => {
                     await firebaseService.deleteData('services', s.id);
                 }, this.elements);
@@ -212,9 +178,6 @@ const renderFunctions = {
         });
     },
 
-    /**
-     * Renderiza a página de relatórios com base no tipo de relatório selecionado.
-     */
     renderReportsPage() {
         const reportType = this.elements.reportTypeFilter.value;
         const { data, headers } = utils.getReportData(reportType, dataStore.getProducts());
@@ -244,9 +207,6 @@ const renderFunctions = {
         });
     },
 
-    /**
-     * Renderiza o gráfico de Vendas vs Custos por Mês.
-     */
     renderSalesCostChart(products) {
         if (!this.elements.salesCostChartCanvas) return;
 
@@ -257,9 +217,9 @@ const renderFunctions = {
             if (p.DATA_COMPRA) {
                 const month = p.DATA_COMPRA.substring(0, 7);
                 if (!acc[month]) acc[month] = { costs: 0, sales: 0 };
-                acc[month].costs += p.CUSTO || 0;
+                acc[month].costs += p.CUSTO_TOTAL || 0;
             }
-            if (p.DATA_VENDA && p.STATUS === 'VENDIDO') {
+            if (p.DATA_VENDA && p.TIPO === 'Venda') {
                 const month = p.DATA_VENDA.substring(0, 7);
                 if (!acc[month]) acc[month] = { costs: 0, sales: 0 };
                 acc[month].sales += p.VALOR_VENDA || 0;
@@ -307,10 +267,6 @@ const renderFunctions = {
         });
     },
 
-    /**
-     * Renderiza o gráfico de Vendas por Método.
-     * @param {Array<object>} data - A lista de produtos (já filtrados) para gerar o gráfico.
-     */
     renderSalesByMethodChart(data) {
         if (!this.elements.salesByMethodChartCanvas) return;
 
@@ -347,9 +303,6 @@ const renderFunctions = {
         });
     },
 
-    /**
-     * Renderiza o checklist de componentes para a calculadora Bizural.
-     */
     renderBizuralChecklist() {
         if (!this.elements.bizuralChecklistEl) return;
 
