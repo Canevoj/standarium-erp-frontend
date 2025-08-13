@@ -70,7 +70,7 @@ const renderFunctions = {
 
         // Calcula valor e custo do estoque atual (apenas produtos para venda em estoque)
         const stockProducts = products.filter(p => p.TIPO === 'Produto para Venda' && p.STATUS !== 'VENDIDO');
-        const stockValue = stockProducts.reduce((acc, p) => acc + (p.PRECO_SUGERIDO || 0), 0);
+        const stockValue = stockProducts.reduce((acc, p) => acc + (p.PRECO_SUGERIDO || 0) * (p.QUANTIDADE || 1), 0);
         const stockCost = stockProducts.reduce((acc, p) => acc + (p.CUSTO || 0), 0);
 
         // Atualiza os elementos DOM com as métricas
@@ -120,8 +120,8 @@ const renderFunctions = {
                 valA = new Date(a.DATA_COMPRA + 'T00:00:00'); // Garante comparação de data
                 valB = new Date(b.DATA_COMPRA + 'T00:00:00');
             } else { // sortBy === 'cost'
-                valA = a.CUSTO || 0;
-                valB = b.CUSTO || 0;
+                valA = (a.CUSTO || 0) / (a.QUANTIDADE || 1); // Ordena por custo unitário
+                valB = (b.CUSTO || 0) / (b.QUANTIDADE || 1);
             }
             return sortOrder === 'asc' ? valA - valB : valB - valA;
         });
@@ -131,7 +131,7 @@ const renderFunctions = {
 
         // Exibe mensagem se não houver itens
         if (items.length === 0) {
-            this.elements.inventoryTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-500">Nenhum item encontrado.</td></tr>`;
+            this.elements.inventoryTableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-500">Nenhum item encontrado.</td></tr>`;
             return;
         }
 
@@ -150,18 +150,23 @@ const renderFunctions = {
             const statusClass = statusMap[status] || statusMap.default;
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-700/50 text-sm';
+            
+            const custoUnitario = (p.CUSTO || 0) / (p.QUANTIDADE || 1);
+            const precoSugeridoUnitario = (p.PRECO_SUGERIDO || 0);
+
             row.innerHTML = `
                 <td class="p-4 font-medium">${p.PRODUTO}</td>
                 <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${isExpense ? 'Consumo' : status}</span></td>
-                <td class="p-4 text-right">${utils.formatCurrency(p.CUSTO)}</td>
-                <td class="p-4 text-right">${isExpense ? '---' : utils.formatCurrency(p.PRECO_SUGERIDO)}</td>
+                <td class="p-4 text-center">${p.QUANTIDADE || '---'}</td>
+                <td class="p-4 text-right">${utils.formatCurrency(custoUnitario)}</td>
+                <td class="p-4 text-right">${isExpense ? '---' : utils.formatCurrency(precoSugeridoUnitario)}</td>
                 <td class="p-4 text-center">${p.DATA_COMPRA ? new Date(p.DATA_COMPRA + 'T00:00:00').toLocaleDateString('pt-BR') : '---'}</td>
                 <td class="p-4 text-right font-bold text-green-400">${p.STATUS === 'VENDIDO' && !isExpense ? utils.formatCurrency(p.VALOR_VENDA) : '---'}</td>
                 <td class="p-4 text-center space-x-2">
                     <button class="btn-edit btn btn-sm bg-orange-500 hover:bg-orange-600 text-white">Gerenciar</button>
-                    <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white">Excluir</button>
+                    <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white"><i data-feather="trash-2" class="h-4 w-4"></i></button>
                 </td>`;
-            // Adiciona listeners para os botões "Gerenciar" e "Excluir"
+            // Adiciona listener para o botão "Gerenciar"
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showProductModal(p));
             row.querySelector('.btn-delete').addEventListener('click', () => {
                 utils.showConfirmation("Deseja realmente excluir este item?", async () => {
@@ -195,7 +200,7 @@ const renderFunctions = {
                 <td class="p-4 text-right font-bold">${utils.formatCurrency(s.PRECO)}</td>
                 <td class="p-4 text-center space-x-2">
                     <button class="btn-edit btn btn-sm bg-orange-500 hover:bg-orange-600 text-white">Editar</button>
-                    <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white">Excluir</button>
+                    <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white"><i data-feather="trash-2" class="h-4 w-4"></i></button>
                 </td>`;
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showServiceModal(s));
             row.querySelector('.btn-delete').addEventListener('click', () => {
@@ -304,6 +309,7 @@ const renderFunctions = {
 
     /**
      * Renderiza o gráfico de Vendas por Método.
+     * @param {Array<object>} data - A lista de produtos (já filtrados) para gerar o gráfico.
      */
     renderSalesByMethodChart(data) {
         if (!this.elements.salesByMethodChartCanvas) return;
