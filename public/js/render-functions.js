@@ -113,7 +113,7 @@ const renderFunctions = {
             const statusMap = {
                 'EM ESTOQUE': 'bg-sky-500/10 text-sky-400',
                 'EM TRÂNSITO': 'bg-yellow-500/10 text-yellow-400',
-                'VENDIDO': 'bg-gray-500/10 text-gray-400',
+                'VENDIDO': 'bg-red-500/10 text-red-400',
                 'N/A': 'bg-purple-500/10 text-purple-400',
                 'default': 'bg-gray-600/10 text-gray-500'
             };
