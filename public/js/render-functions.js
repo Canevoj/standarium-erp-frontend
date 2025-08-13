@@ -133,7 +133,8 @@ const renderFunctions = {
                 <td class="p-4 text-center">${p.DATA_COMPRA ? new Date(p.DATA_COMPRA + 'T00:00:00').toLocaleDateString('pt-BR') : '---'}</td>
                 <td class="p-4 text-right font-bold text-green-400">${p.STATUS === 'VENDIDO' && !isExpense ? utils.formatCurrency(p.VALOR_VENDA) : '---'}</td>
                 <td class="p-4 text-center space-x-2">
-                    <button class="btn-edit btn btn-sm bg-orange-500 hover:bg-orange-600 text-white">Gerenciar</button>
+                    <button class="btn-sell btn btn-sm bg-green-500 hover:bg-green-600 text-white font-bold">Vender</button>
+                    <button class="btn-edit btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white">Editar</button>
                     <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white"><i data-feather="trash-2" class="h-4 w-4"></i></button>
                 </td>`;
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showProductModal(p));
