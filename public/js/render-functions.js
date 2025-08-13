@@ -137,10 +137,14 @@ const renderFunctions = {
                     <button class="btn-edit btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white">Editar</button>
                     <button class="btn-delete btn btn-sm bg-red-600 hover:bg-red-700 text-white"><i data-feather="trash-2" class="h-4 w-4"></i></button>
                 </td>`;
+            row.querySelector('.btn-sell').addEventListener('click', () => uiHandlers.showSaleModal(p)); // <--- NOVO
             row.querySelector('.btn-edit').addEventListener('click', () => uiHandlers.showProductModal(p));
             row.querySelector('.btn-delete').addEventListener('click', () => {
                 utils.showConfirmation("Deseja realmente excluir este item?", async () => {
-                    await firebaseService.deleteData('products', p.id);
+                    // AINDA NÃO TEMOS O firebaseService AQUI, VAMOS AJUSTAR
+                    // Por enquanto, vamos apenas logar a intenção
+                    console.log(`Intenção de deletar o item com ID: ${p.id}`);
+                    // A lógica final de deleção virá depois que refatorarmos o firebaseService
                 }, this.elements);
             });
             this.elements.inventoryTableBody.appendChild(row);
