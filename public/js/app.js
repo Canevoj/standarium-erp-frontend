@@ -1,212 +1,158 @@
-/*
- * Arquivo: firebase-service.js
- * Descrição: Módulo responsável pela inicialização do Firebase, autenticação
- * e gerenciamento de dados no Firestore. A configuração do Firebase é
- * obtida de um endpoint seguro no backend.
- */
-
-import { utils } from './utils.js';
+import { domManager } from './dom-manager.js';
+import { uiHandlers } from './ui-handlers.js';
+import { renderFunctions } from './render-functions.js';
 import { dataStore } from './data-store.js';
+import { utils } from './utils.js';
+import { apiService } from './api-service.js';
 
-const firebaseService = {
+
+const firebaseManager = {
     db: null,
     auth: null,
     userId: null,
-    elements: null,
-    appInstance: null,
-
-    /**
-     * Obtém a configuração do Firebase de um endpoint seguro no backend.
-     */
+    
     async getFirebaseConfig() {
         const backendUrl = 'https://standarium-erp-api.onrender.com/api/firebase-config';
         try {
             const response = await fetch(backendUrl);
             if (!response.ok) {
-                throw new Error('Falha ao obter a configuração do Firebase do backend.');
+                throw new Error(`Falha ao obter a configuração do Firebase. Status: ${response.status}`);
             }
             return await response.json();
         } catch (error) {
-            console.error("Erro ao obter a configuração do Firebase:", error);
-            utils.showError("Falha ao obter a configuração do Firebase.", this.elements.loadingOverlay, this.elements.loadingText);
+            console.error("Erro CRÍTICO ao obter a configuração do Firebase:", error);
+            // Mostra o erro para o usuário de forma clara
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            utils.showError("Não foi possível conectar ao servidor para iniciar. Verifique o backend e tente novamente.", loadingOverlay, loadingText);
             return null;
         }
     },
 
-    /**
-     * Inicializa o Firebase e configura o listener de estado de autenticação.
-     */
-    async init(elements, app) {
-        this.elements = elements;
-        this.appInstance = app;
-
+    async init(appInstance) {
         const firebaseConfig = await this.getFirebaseConfig();
-        if (!firebaseConfig) {
-            return;
-        }
+        if (!firebaseConfig) return; // Se a configuração falhar, para a execução.
 
         try {
             const firebaseApp = firebase.initializeApp(firebaseConfig);
             this.db = firebaseApp.firestore();
             this.auth = firebaseApp.auth();
-            this.handleAuthStateChange();
+            this.handleAuthStateChange(appInstance);
         } catch (error) {
             console.error("Falha na inicialização do Firebase:", error);
-            utils.showError("Falha ao inicializar o Firebase. Verifique suas chaves.", this.elements.loadingOverlay, this.elements.loadingText);
-            this.elements.loadingOverlay.classList.add('hidden');
         }
     },
-
-    /**
-     * Configura o observador de estado de autenticação do Firebase.
-     */
-    handleAuthStateChange() {
+    
+    handleAuthStateChange(appInstance) {
         this.auth.onAuthStateChanged(user => {
+            const { elements } = appInstance;
             if (user) {
                 this.userId = user.uid;
-                this.elements.authContainer.classList.add('hidden');
-                this.elements.appContainer.classList.remove('hidden');
-                this.setupFirestoreListeners();
+                elements.authContainer.classList.add('hidden');
+                elements.appContainer.classList.remove('hidden');
+                this.setupFirestoreListeners(appInstance);
             } else {
                 this.userId = null;
-                this.elements.authContainer.classList.remove('hidden');
-                this.elements.appContainer.classList.add('hidden');
-                this.elements.loadingOverlay.classList.add('hidden');
+                elements.authContainer.classList.remove('hidden');
+                elements.appContainer.classList.add('hidden');
+                elements.loadingOverlay.classList.add('hidden');
             }
             if (window.feather) feather.replace();
         });
     },
 
-    /**
-     * Configura os listeners em tempo real do Firestore para produtos, serviços e componentes.
-     */
-    setupFirestoreListeners() {
-        if (!this.db || !this.userId) {
-            console.warn("Firestore ou UserId não disponíveis para configurar listeners.");
-            return;
-        }
+    setupFirestoreListeners(appInstance) {
+        if (!this.db || !this.userId) return;
+        const paths = {
+            products: `users/${this.userId}/products`,
+            services: `users/${this.userId}/services`,
+            components: `users/${this.userId}/components`,
+            sales: `users/${this.userId}/sales`
+        };
 
-        const productsPath = `users/${this.userId}/products`;
-        const salesPath = `users/${this.userId}/sales`;
-        const servicesPath = `users/${this.userId}/services`;
-        const componentsPath = `users/${this.userId}/components`;
-
-        // Listener para produtos
-        this.db.collection(productsPath).onSnapshot(snapshot => {
-            const products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            dataStore.setProducts(products);
-            this.appInstance.render.renderAll();
-        }, error => console.error("Erro ao buscar produtos:", error));
-
-        // Listener para serviços
-        this.db.collection(servicesPath).onSnapshot(snapshot => {
-            const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            dataStore.setServices(services);
-            this.appInstance.render.renderServicesTable();
-        }, error => console.error("Erro ao buscar serviços:", error));
-
-        // Listener para componentes
-        this.db.collection(componentsPath).onSnapshot(snapshot => {
-            const components = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            dataStore.setComponents(components);
-            this.appInstance.render.renderBizuralChecklist();
-        }, error => console.error("Erro ao buscar componentes:", error));
+        const setupListener = (path, setData, renderFunc) => {
+            this.db.collection(path).onSnapshot(snapshot => {
+                const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setData(items);
+                if (renderFunc) renderFunc();
+            }, error => console.error(`Erro ao buscar dados de ${path}:`, error));
+        };
         
-        // Listener para vendas (novo)
-        this.db.collection(salesPath).onSnapshot(snapshot => {
-            const sales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            dataStore.setSales(sales);
-            this.appInstance.render.renderAll();
-        }, error => console.error("Erro ao buscar vendas:", error));
+        // Configura todos os listeners
+        setupListener(paths.products, dataStore.setProducts, () => appInstance.render.renderAll());
+        setupListener(paths.services, dataStore.setServices, () => appInstance.render.renderServicesTable());
+        setupListener(paths.components, dataStore.setComponents, () => appInstance.render.renderBizuralChecklist());
+        setupListener(paths.sales, (sales) => dataStore.setSales(sales)); // Assumindo que você adicionará setSales ao dataStore
+        
+        // Esconde o overlay DEPOIS que os listeners foram configurados
+        appInstance.elements.loadingOverlay.classList.add('hidden');
     },
 
-    /**
-     * Realiza o login do usuário.
-     */
-    async signIn(email, password) {
-        try {
-            await this.auth.signInWithEmailAndPassword(email, password);
-        } catch (error) {
-            console.error("Erro de login:", error.code, error.message);
-            throw new Error(utils.getAuthErrorMessage(error.code));
-        }
+    // Funções de login, etc., que serão chamadas pelo ui-handlers
+    signIn(email, password) {
+        return this.auth.signInWithEmailAndPassword(email, password);
     },
-
-    /**
-     * Cria uma nova conta de usuário.
-     */
-    async signUp(email, password) {
-        try {
-            await this.auth.createUserWithEmailAndPassword(email, password);
-        } catch (error) {
-            console.error("Erro de cadastro:", error.code, error.message);
-            throw new Error(utils.getAuthErrorMessage(error.code));
-        }
+    signUp(email, password) {
+        return this.auth.createUserWithEmailAndPassword(email, password);
     },
-
-    /**
-     * Realiza o logout do usuário.
-     */
-    async signOut() {
-        try {
-            await this.auth.signOut();
-            console.log("Usuário desconectado com sucesso.");
-        } catch (error) {
-            console.error("Erro de logout:", error);
-            utils.showError("Ocorreu um erro ao fazer logout. Tente novamente.", this.elements.loadingOverlay, this.elements.loadingText);
-        }
-    },
-
-    /**
-     * Salva dados em uma coleção do Firestore.
-     */
-    async saveData(collectionName, data, id = null, saveButton = null) {
-        if (!this.userId) {
-            console.error("Usuário não autenticado para salvar dados.");
-            utils.showError("Você precisa estar logado para salvar dados.", this.elements.loadingOverlay, this.elements.loadingText);
-            return;
-        }
-
-        const collectionPath = `users/${this.userId}/${collectionName}`;
-        if (saveButton) saveButton.disabled = true;
-
-        try {
-            const dataToSave = { ...data, lastUpdatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-            if (id) {
-                await this.db.collection(collectionPath).doc(id).update(dataToSave);
-            } else {
-                await this.db.collection(collectionPath).add(dataToSave);
-            }
-            console.log(`Dados salvos com sucesso em ${collectionPath}. ID: ${id || 'novo'}`);
-        } catch (error) {
-            console.error(`Erro ao salvar dados em ${collectionPath}:`, error);
-            utils.showError("Ocorreu um erro ao salvar os dados.", this.elements.loadingOverlay, this.elements.loadingText);
-            throw error;
-        } finally {
-            if (saveButton) saveButton.disabled = false;
-        }
-    },
-
-    /**
-     * Exclui um documento de uma coleção do Firestore.
-     */
-    async deleteData(collectionName, id) {
-        if (!this.userId) {
-            console.error("Usuário não autenticado para excluir dados.");
-            utils.showError("Você precisa estar logado para excluir dados.", this.elements.loadingOverlay, this.elements.loadingText);
-            return;
-        }
-
-        const collectionPath = `users/${this.userId}/${collectionName}`;
-        try {
-            await this.db.collection(collectionPath).doc(id).delete();
-            console.log(`Documento ${id} excluído de ${collectionPath} com sucesso.`);
-        } catch (error) {
-            console.error(`Erro ao excluir dados de ${collectionPath}:`, error);
-            utils.showError("Ocorreu um erro ao excluir o item.", this.elements.loadingOverlay, this.elements.loadingText);
-            throw error;
-        }
-    },
+    signOut() {
+        return this.auth.signOut();
+    }
 };
 
-export { firebaseService };
+// Classe principal da Aplicação
+class App {
+    constructor() {
+        this.elements = null;
+        this.render = renderFunctions;
+        this.ui = uiHandlers;
+        this.charts = {}; // Para armazenar instâncias de gráficos
+    }
+
+    async init() {
+        domManager.injectHTML();
+        this.elements = domManager.cacheDOMElements();
+
+        // Passa as dependências para os outros módulos
+        this.render.init(this.elements, this);
+        this.ui.init(this.elements, this);
+        
+        // Inicializa o Firebase, que é o ponto crítico
+        await firebaseManager.init(this);
+        
+        this.ui.setupEventListeners();
+        
+        // Passa a instância do firebaseManager para o uiHandlers, para que ele possa chamar signIn, etc.
+        this.ui.firebaseManager = firebaseManager;
+        
+        this.navigateTo(window.location.hash || '#dashboard');
+        window.addEventListener('hashchange', () => this.navigateTo(window.location.hash));
+    }
+
+    navigateTo(hash) {
+        this.elements.pages.forEach(p => p.classList.remove('active'));
+        const targetPage = document.getElementById(`page-${hash.substring(1)}`);
+        if (targetPage) {
+            targetPage.classList.add('active');
+        } else {
+            document.getElementById('page-dashboard').classList.add('active');
+        }
+        
+        this.elements.sidebarLinks.forEach(l => {
+            if(l.hash === hash) {
+                l.classList.add('active-link-style'); // Adicione este estilo no seu CSS
+            } else {
+                l.classList.remove('active-link-style');
+            }
+        });
+
+        this.render.renderAll();
+        if (window.feather) feather.replace();
+    }
+}
+
+// Inicia a aplicação
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new App();
+    app.init();
+});
