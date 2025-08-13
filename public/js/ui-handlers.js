@@ -31,7 +31,7 @@ const uiHandlers = {
 
             try {
                 if (isLoginMode) {
-                    await firebaseService.signIn(email, password);
+                    await this.firebaseManager.signIn(email, password);
                 } else {
                     await firebaseService.signUp(email, password);
                 }
