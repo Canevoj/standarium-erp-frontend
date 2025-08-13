@@ -240,7 +240,7 @@ saleForm.addEventListener('submit', (e) => {
     },
 
     showSaleModal(product) {
-    const form = document.getElementById('sale-form'); // Usamos getElementById pois o form está fora do cache de elements
+    const form = this.elements.saleForm; // Usamos getElementById pois o form está fora do cache de elements
     form.reset();
 
     // Preenche os campos do modal com as informações do produto
