@@ -332,6 +332,52 @@ const domManager = {
             </div>
         `;
     },
+        document.getElementById('sale-modal').innerHTML = `
+    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg modal-content">
+        <form id="sale-form" class="p-6 space-y-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 id="sale-modal-title" class="text-2xl font-bold">Registrar Venda</h2>
+                    <p id="sale-product-name" class="text-gray-400"></p>
+                </div>
+                <button type="button" class="btn-icon" id="cancel-sale-btn">&times;</button>
+            </div>
+            
+            <input type="hidden" id="sale-product-id">
+            <input type="hidden" id="sale-product-cost">
+            
+            <div class="p-3 bg-gray-900/50 rounded-md text-center">
+                <span>Estoque Atual: </span>
+                <span id="sale-stock-quantity" class="font-bold text-sky-400 text-lg"></span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="sale-quantity" class="text-sm font-medium">Quantidade a Vender</label>
+                    <input type="number" id="sale-quantity" class="form-input" required min="1">
+                </div>
+                <div>
+                    <label for="sale-price" class="text-sm font-medium">Preço de Venda (Unitário)</label>
+                    <input type="number" step="0.01" id="sale-price" class="form-input" required>
+                </div>
+            </div>
+
+            <div>
+                <label for="sale-method" class="text-sm font-medium">Método de Pagamento</label>
+                <select id="sale-method" class="form-select">
+                    <option value="Pix">Pix</option>
+                    <option value="Cartão">Cartão</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+
+            <div class="pt-4 flex justify-end">
+                <button type="submit" class="btn btn-primary bg-green-600 hover:bg-green-700">Confirmar Venda</button>
+            </div>
+        </form>
+    </div>
+    `;
 
     /**
      * Cacheia e retorna referências para elementos DOM importantes.
