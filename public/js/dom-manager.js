@@ -378,7 +378,6 @@ const domManager = {
         </form>
     </div>
     `;
-
     /**
      * Cacheia e retorna referências para elementos DOM importantes.
      * Isso evita a necessidade de buscar elementos repetidamente, otimizando o desempenho.
@@ -478,5 +477,5 @@ const domManager = {
         cancelSaleBtn: document.getElementById('cancel-sale-btn')
     };
 },
-
+};
 export { domManager };
