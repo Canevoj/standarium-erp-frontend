@@ -333,12 +333,12 @@ const domManager = {
         `;
     },
         document.getElementById('sale-modal').innerHTML = `
-    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg modal-content">
-        <form id="sale-form" class="p-6 space-y-4">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h2 id="sale-modal-title" class="text-2xl font-bold">Registrar Venda</h2>
-                    <p id="sale-product-name" class="text-gray-400"></p>
+            <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg modal-content">
+                <form id="sale-form" class="p-6 space-y-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 id="sale-modal-title" class="text-2xl font-bold">Registrar Venda</h2>
+                        <p id="sale-product-name" class="text-gray-400"></p>
                 </div>
                 <button type="button" class="btn-icon" id="cancel-sale-btn">&times;</button>
             </div>
