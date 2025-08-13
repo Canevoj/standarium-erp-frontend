@@ -228,6 +228,65 @@ const uiHandlers = {
         }
     },
 
+    showSaleModal(product) {
+    const form = document.getElementById('sale-form'); // Usamos getElementById pois o form está fora do cache de elements
+    form.reset();
+
+    // Preenche os campos do modal com as informações do produto
+    document.getElementById('sale-product-name').textContent = product.PRODUTO;
+    document.getElementById('sale-stock-quantity').textContent = product.QUANTIDADE;
+    document.getElementById('sale-product-id').value = product.id;
+    
+    // Calcula o custo unitário para usar no cálculo do lucro depois
+    const custoUnitario = (product.CUSTO || 0) / (product.QUANTIDADE || 1);
+    document.getElementById('sale-product-cost').value = custoUnitario;
+
+    // Sugere o preço de venda, se houver
+    document.getElementById('sale-price').value = product.PRECO_SUGERIDO || '';
+
+    document.getElementById('sale-modal').classList.remove('hidden');
+},
+
+hideSaleModal() {
+    document.getElementById('sale-modal').classList.add('hidden');
+},
+
+async saveSale() {
+    const form = document.getElementById('sale-form');
+    const quantityToSell = parseInt(form.querySelector('#sale-quantity').value);
+    const currentStock = parseInt(document.getElementById('sale-stock-quantity').textContent);
+
+    // Validação
+    if (!quantityToSell || quantityToSell <= 0) {
+        alert("Por favor, insira uma quantidade válida.");
+        return;
+    }
+    if (quantityToSell > currentStock) {
+        alert("A quantidade a vender não pode ser maior que o estoque atual.");
+        return;
+    }
+
+    const saleData = {
+        productId: form.querySelector('#sale-product-id').value,
+        productName: document.getElementById('sale-product-name').textContent,
+        quantitySold: quantityToSell,
+        salePrice: parseFloat(form.querySelector('#sale-price').value),
+        totalCost: parseFloat(form.querySelector('#sale-product-cost').value) * quantityToSell,
+        saleDate: new Date().toISOString().split('T')[0], // Pega a data de hoje
+        saleMethod: form.querySelector('#sale-method').value,
+    };
+    
+    // Calcula o lucro
+    saleData.profit = (saleData.salePrice * saleData.quantitySold) - saleData.totalCost;
+
+    console.log("Dados da Venda a Salvar:", saleData);
+    alert("Venda registrada no console! O próximo passo é salvar no Firebase.");
+
+    // AQUI ENTRARÁ A LÓGICA DO FIREBASE NA PRÓXIMA ETAPA
+
+    this.hideSaleModal();
+},
+
     showServiceModal(service = null) {
         const form = this.elements.serviceForm;
         form.reset();
