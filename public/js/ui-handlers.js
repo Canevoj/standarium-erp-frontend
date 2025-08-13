@@ -12,7 +12,7 @@ import { utils } from './utils.js';
 const uiHandlers = {
     elements: null,
     appInstance: null,
-    chatHistory: [], // Armazena o histórico da conversa com a IA
+    chatHistory: [],
 
     init(elements, app) {
         this.elements = elements;
@@ -144,6 +144,7 @@ const uiHandlers = {
             form.querySelector('#produto').value = product.PRODUTO;
             form.querySelector('#type').value = product.TIPO || 'Produto para Venda';
             form.querySelector('#custo').value = product.CUSTO;
+            form.querySelector('#quantidade').value = product.QUANTIDADE; // Adicionado campo de quantidade
             form.querySelector('#preco_sugerido').value = product.PRECO_SUGERIDO;
             form.querySelector('#data_compra').value = product.DATA_COMPRA;
             form.querySelector('#metodo_compra').value = product.METODO_COMPRA;
@@ -201,6 +202,7 @@ const uiHandlers = {
             PRODUTO: form.querySelector('#produto').value,
             TIPO: type,
             CUSTO: parseFloat(form.querySelector('#custo').value) || 0,
+            QUANTIDADE: parseInt(form.querySelector('#quantidade').value) || 1, // Adicionado campo de quantidade
             PRECO_SUGERIDO: type === 'Produto para Venda' ? (parseFloat(form.querySelector('#preco_sugerido').value) || 0) : null,
             DATA_COMPRA: form.querySelector('#data_compra').value,
             METODO_COMPRA: form.querySelector('#metodo_compra').value,
@@ -315,7 +317,6 @@ const uiHandlers = {
     },
 
     async generateBusinessInsights(button) {
-        // Zera o histórico da conversa a cada nova análise
         this.chatHistory = [];
 
         this.elements.insightsContainer.classList.remove('hidden');
