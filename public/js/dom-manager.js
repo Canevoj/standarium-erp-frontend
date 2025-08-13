@@ -208,7 +208,6 @@ const domManager = {
                         <fieldset class="border border-gray-600 p-3 rounded-lg">
                             <legend class="text-sm px-2 text-gray-400">Detalhes da Compra</legend>
                             <div class="space-y-4">
-                                <!-- Adicionado campo de quantidade -->
                                 <label>Quantidade
                                     <input type="number" step="1" id="quantidade" class="form-input" value="1" required>
                                 </label>
@@ -243,6 +242,9 @@ const domManager = {
                                         </select>
                                     </label>
                                     <div id="sale-fields" class="hidden space-y-4 border-t border-dashed border-sky-500 pt-4 mt-4">
+                                        <label>Quantidade Vendida
+                                            <input type="number" step="1" id="quantidade-vendida" class="form-input">
+                                        </label>
                                         <label>Valor Final da Venda (Total)
                                             <input type="number" step="0.01" id="valor_venda" class="form-input">
                                         </label>
