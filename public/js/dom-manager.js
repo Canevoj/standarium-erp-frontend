@@ -331,7 +331,6 @@ const domManager = {
                 </div>
             </div>
         `;
-    },
         document.getElementById('sale-modal').innerHTML = `
             <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg modal-content">
                 <form id="sale-form" class="p-6 space-y-4">
@@ -378,100 +377,101 @@ const domManager = {
         </form>
     </div>
     `;
+    },
 
     cacheDOMElements() {
-    return {
-        // Overlays e contêineres principais
-        loadingOverlay: document.getElementById('loading-overlay'),
-        loadingText: document.getElementById('loading-text'),
-        authContainer: document.getElementById('auth-container'),
-        appContainer: document.getElementById('app-container'),
+        return {
+            // Overlays e contêineres principais
+            loadingOverlay: document.getElementById('loading-overlay'),
+            loadingText: document.getElementById('loading-text'),
+            authContainer: document.getElementById('auth-container'),
+            appContainer: document.getElementById('app-container'),
 
-        // Autenticação
-        authForm: document.getElementById('auth-form'),
-        authTitle: document.getElementById('auth-title'),
-        authSubtitle: document.getElementById('auth-subtitle'),
-        authSubmitBtn: document.getElementById('auth-submit-btn'),
-        authToggleText: document.getElementById('auth-toggle-text'),
-        authToggleBtn: document.getElementById('auth-toggle-btn'),
-        authError: document.getElementById('auth-error'),
+            // Autenticação
+            authForm: document.getElementById('auth-form'),
+            authTitle: document.getElementById('auth-title'),
+            authSubtitle: document.getElementById('auth-subtitle'),
+            authSubmitBtn: document.getElementById('auth-submit-btn'),
+            authToggleText: document.getElementById('auth-toggle-text'),
+            authToggleBtn: document.getElementById('auth-toggle-btn'),
+            authError: document.getElementById('auth-error'),
 
-        // Sidebar e navegação
-        sidebar: document.getElementById('sidebar'),
-        sidebarToggle: document.getElementById('sidebar-toggle'),
-        mobileMenuBtn: document.getElementById('mobile-menu-btn'),
-        mobileOverlay: document.getElementById('mobile-overlay'),
-        sidebarLinks: document.querySelectorAll('.sidebar-link'),
-        logoutBtn: document.getElementById('logout-btn'),
+            // Sidebar e navegação
+            sidebar: document.getElementById('sidebar'),
+            sidebarToggle: document.getElementById('sidebar-toggle'),
+            mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+            mobileOverlay: document.getElementById('mobile-overlay'),
+            sidebarLinks: document.querySelectorAll('.sidebar-link'),
+            logoutBtn: document.getElementById('logout-btn'),
 
-        // Páginas de conteúdo
-        pages: document.querySelectorAll('.page'),
-        mainContent: document.getElementById('main-content'),
+            // Páginas de conteúdo
+            pages: document.querySelectorAll('.page'),
+            mainContent: document.getElementById('main-content'),
 
-        // Dashboard
-        metricFaturamento: document.getElementById('metric-faturamento'),
-        metricLucro: document.getElementById('metric-lucro'),
-        metricEstoque: document.getElementById('metric-estoque'),
-        metricCustoEstoque: document.getElementById('metric-custo-estoque'),
-        metricVendidos: document.getElementById('metric-vendidos'),
-        dashboardPeriodFilter: document.getElementById('dashboard-period-filter'),
-        salesCostChartCanvas: document.getElementById('sales-cost-chart'),
-        salesByMethodChartCanvas: document.getElementById('sales-by-method-chart'),
-        generateInsightsBtn: document.getElementById('generate-insights-btn'),
-        insightsContainer: document.getElementById('insights-container'),
+            // Dashboard
+            metricFaturamento: document.getElementById('metric-faturamento'),
+            metricLucro: document.getElementById('metric-lucro'),
+            metricEstoque: document.getElementById('metric-estoque'),
+            metricCustoEstoque: document.getElementById('metric-custo-estoque'),
+            metricVendidos: document.getElementById('metric-vendidos'),
+            dashboardPeriodFilter: document.getElementById('dashboard-period-filter'),
+            salesCostChartCanvas: document.getElementById('sales-cost-chart'),
+            salesByMethodChartCanvas: document.getElementById('sales-by-method-chart'),
+            generateInsightsBtn: document.getElementById('generate-insights-btn'),
+            insightsContainer: document.getElementById('insights-container'),
 
-        // Estoque
-        addProductBtn: document.getElementById('add-product-btn'),
-        inventoryTableBody: document.getElementById('inventory-table-body'),
-        inventoryStatusFilter: document.getElementById('inventory-status-filter'),
-        inventoryDateFilter: document.getElementById('inventory-date-filter'),
-        inventorySortBy: document.getElementById('inventory-sort-by'),
-        inventorySortOrder: document.getElementById('inventory-sort-order'),
-        productModal: document.getElementById('product-modal'),
-        productModalTitle: document.getElementById('product-modal-title'),
-        productForm: document.getElementById('product-form'),
-        geminiDescBtn: document.getElementById('gemini-desc-btn'),
+            // Estoque
+            addProductBtn: document.getElementById('add-product-btn'),
+            inventoryTableBody: document.getElementById('inventory-table-body'),
+            inventoryStatusFilter: document.getElementById('inventory-status-filter'),
+            inventoryDateFilter: document.getElementById('inventory-date-filter'),
+            inventorySortBy: document.getElementById('inventory-sort-by'),
+            inventorySortOrder: document.getElementById('inventory-sort-order'),
+            productModal: document.getElementById('product-modal'),
+            productModalTitle: document.getElementById('product-modal-title'),
+            productForm: document.getElementById('product-form'),
+            geminiDescBtn: document.getElementById('gemini-desc-btn'),
 
-        // Serviços
-        addServiceBtn: document.getElementById('add-service-btn'),
-        servicesTableBody: document.getElementById('services-table-body'),
-        serviceModal: document.getElementById('service-modal'),
-        serviceForm: document.getElementById('service-form'),
-        serviceModalTitle: document.getElementById('service-modal-title'),
+            // Serviços
+            addServiceBtn: document.getElementById('add-service-btn'),
+            servicesTableBody: document.getElementById('services-table-body'),
+            serviceModal: document.getElementById('service-modal'),
+            serviceForm: document.getElementById('service-form'),
+            serviceModalTitle: document.getElementById('service-modal-title'),
 
-        // Relatórios
-        reportTableBody: document.getElementById('report-table-body'),
-        reportTableHead: document.querySelector('#page-reports thead'),
-        reportTypeFilter: document.getElementById('report-type-filter'),
-        exportBtn: document.getElementById('export-btn'),
-        exportDropdown: document.getElementById('export-dropdown'),
-        exportCsvBtn: document.getElementById('export-csv-btn'),
-        exportPdfBtn: document.getElementById('export-pdf-btn'),
-        exportXlsxBtn: document.getElementById('export-xlsx-btn'),
-        printArea: document.getElementById('print-area'),
+            // Relatórios
+            reportTableBody: document.getElementById('report-table-body'),
+            reportTableHead: document.querySelector('#page-reports thead'),
+            reportTypeFilter: document.getElementById('report-type-filter'),
+            exportBtn: document.getElementById('export-btn'),
+            exportDropdown: document.getElementById('export-dropdown'),
+            exportCsvBtn: document.getElementById('export-csv-btn'),
+            exportPdfBtn: document.getElementById('export-pdf-btn'),
+            exportXlsxBtn: document.getElementById('export-xlsx-btn'),
+            printArea: document.getElementById('print-area'),
 
-        // Bizural (Montagem)
-        bizuralChecklistEl: document.getElementById('bizural-checklist'),
-        bizuralCostEl: document.getElementById('bizural-cost'),
-        bizuralLaborInput: document.getElementById('bizural-labor'),
-        bizuralPriceEl: document.getElementById('bizural-price'),
-        resetBizuralBtn: document.getElementById('reset-bizural-btn'),
-        addComponentBtn: document.getElementById('add-component-btn'),
-        componentModal: document.getElementById('component-modal'),
-        componentModalTitle: document.getElementById('component-modal-title'),
-        componentForm: document.getElementById('component-form'),
+            // Bizural (Montagem)
+            bizuralChecklistEl: document.getElementById('bizural-checklist'),
+            bizuralCostEl: document.getElementById('bizural-cost'),
+            bizuralLaborInput: document.getElementById('bizural-labor'),
+            bizuralPriceEl: document.getElementById('bizural-price'),
+            resetBizuralBtn: document.getElementById('reset-bizural-btn'),
+            addComponentBtn: document.getElementById('add-component-btn'),
+            componentModal: document.getElementById('component-modal'),
+            componentModalTitle: document.getElementById('component-modal-title'),
+            componentForm: document.getElementById('component-form'),
 
-        // Modal de Confirmação
-        confirmModal: document.getElementById('confirm-modal'),
-        confirmText: document.getElementById('confirm-text'),
-        confirmOkBtn: document.getElementById('confirm-ok-btn'),
-        confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
+            // Modal de Confirmação
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmText: document.getElementById('confirm-text'),
+            confirmOkBtn: document.getElementById('confirm-ok-btn'),
+            confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
 
-        // Modal de Venda
-        saleModal: document.getElementById('sale-modal'),
-        saleForm: document.getElementById('sale-form'),
-        cancelSaleBtn: document.getElementById('cancel-sale-btn')
-    };
-},
+            // Modal de Venda
+            saleModal: document.getElementById('sale-modal'),
+            saleForm: document.getElementById('sale-form'),
+            cancelSaleBtn: document.getElementById('cancel-sale-btn')
+        };
+    },
 };
 export { domManager };
