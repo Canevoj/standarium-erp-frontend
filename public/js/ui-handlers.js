@@ -3,19 +3,19 @@
  * Descrição: Módulo responsável por configurar todos os event listeners
  * e gerenciar as interações da interface do usuário (UI).
  */
-
 import { apiService } from './api-service.js';
 import { dataStore } from './data-store.js';
 import { utils } from './utils.js';
 
-const uiHandlers = {
+export const uiHandlers = {
     elements: null,
     appInstance: null,
-    chatHistory: [],
+    firebaseManager: null,
+    chatHistory: [],     
 
-    init(elements, app) {
+    init(elements, appInstance) {
         this.elements = elements;
-        this.appInstance = app;
+        this.appInstance = appInstance;
     },
 
     setupEventListeners() {
