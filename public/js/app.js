@@ -110,17 +110,18 @@ class App {
     }
 
     async init() {
-        domManager.injectHTML();
-        this.elements = domManager.cacheDOMElements();
+    domManager.injectHTML();
+    this.elements = domManager.cacheDOMElements();
 
-        // Passa as dependências para os outros módulos
-        this.render.init(this.elements, this);
-        this.ui.init(this.elements, this);
-        
-        // Inicializa o Firebase, que é o ponto crítico
-        await firebaseManager.init(this);
-        
-        this.ui.setupEventListeners();
+    // Passa as dependências para os outros módulos
+    this.render.init(this.elements, this);
+    this.ui.init(this.elements, this);
+    this.ui.firebaseManager = firebaseManager; 
+
+    // Inicializa o Firebase, que é o ponto crítico
+    await firebaseManager.init(this);
+
+    this.ui.setupEventListeners();
         
         // Passa a instância do firebaseManager para o uiHandlers, para que ele possa chamar signIn, etc.
         this.ui.firebaseManager = firebaseManager;
