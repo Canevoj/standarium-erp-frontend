@@ -44,14 +44,27 @@
                 </div>
                 <h2 id="auth-title" class="text-2xl font-bold text-center text-white">Login</h2>
                 <p id="auth-subtitle" class="text-center text-gray-400 text-sm mb-6">Acesse sua plataforma de gestão.</p>
-                <form id="auth-form">
-                    <div class="space-y-4">
-                        <input type="email" id="email" placeholder="E-mail da empresa" class="form-input" required>
-                        <input type="password" id="password" placeholder="Senha" class="form-input" required>
-                    </div>
-                    <p id="auth-error" class="text-red-400 text-sm mt-4 text-center h-5"></p>
-                    <button type="submit" id="auth-submit-btn" class="w-full btn btn-primary mt-6">Entrar</button>
-                </form>
+                <form id="auth-form" class="space-y-4 relative z-10">
+    <div class="input-group-animated relative z-10 transition-all duration-300">
+        <label for="email" class="sr-only">Email</label>
+        <input type="email" id="email" name="email" class="form-input focus:ring-sky-500 focus:border-sky-500" placeholder="Seu email" required>
+    </div>
+    <div class="input-group-animated relative z-10 transition-all duration-300">
+        <label for="password" class="sr-only">Senha</label>
+        <input type="password" id="password" name="password" class="form-input focus:ring-sky-500 focus:border-sky-500" placeholder="Sua senha" required>
+    </div>
+    <div id="confirm-password-group" class="input-group-animated relative z-10 transition-all duration-300 hidden">
+        <label for="confirm-password" class="sr-only">Confirmar Senha</label>
+        <input type="password" id="confirm-password" name="confirm-password" class="form-input focus:ring-sky-500 focus:border-sky-500" placeholder="Confirme sua senha">
+    </div>
+
+    <button type="submit" id="auth-submit-btn" class="btn btn-primary w-full bg-sky-600 hover:bg-sky-700 mt-6 z-10 relative">Entrar</button>
+
+    <div class="text-center text-gray-400 mt-4 relative z-10">
+        <span id="auth-toggle-text">Não tem uma conta?</span>
+        <button type="button" id="auth-toggle-btn" class="text-sky-400 hover:underline ml-1">Cadastre-se</button>
+    </div>
+</form>
                 <p class="text-center text-sm text-gray-400 mt-6">
                     <span id="auth-toggle-text">Não tem uma conta?</span>
                     <button id="auth-toggle-btn" class="font-semibold text-sky-400 hover:text-sky-300">Cadastre-se</button>
