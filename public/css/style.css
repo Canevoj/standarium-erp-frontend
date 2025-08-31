@@ -307,6 +307,11 @@ body {
   content: '';
   position: absolute;
   z-index: -1; /* Coloca a borda animada atrás do conteúdo do card */
+    background: conic-gradient(
+    transparent,
+    rgba(14, 116, 144, 0.8), /* Novo azul mais escuro/sutil */
+    transparent 30%
+  );
   
   /* Faz a animação ocupar uma área maior que o card para o efeito de "borda" */
   top: -50%;
@@ -323,4 +328,43 @@ body {
   
   /* Aplica a animação que definimos acima */
   animation: rotating 4s linear infinite;
+}
+/* Estilo inicial dos grupos de input */
+.input-group-animated {
+  opacity: 0; /* Esconde o input por padrão */
+  transform: translateY(20px); /* Move um pouco para baixo */
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out; /* Adiciona transição suave */
+}
+
+/* Mostra os inputs quando o contêiner de login é hover (passa o mouse) */
+.login-box-animated:hover .input-group-animated {
+  opacity: 1; /* Torna visível */
+  transform: translateY(0); /* Volta para a posição original */
+}
+
+/* Atraso para os inputs aparecerem em sequência */
+.login-box-animated:hover .input-group-animated:nth-child(1) {
+  transition-delay: 0.1s;
+}
+.login-box-animated:hover .input-group-animated:nth-child(2) {
+  transition-delay: 0.2s;
+}
+.login-box-animated:hover .input-group-animated:nth-child(3) { /* Para o campo de confirmar senha, se existir */
+  transition-delay: 0.3s;
+}
+
+/* Ajustes no formulário e botões para a nova estética */
+.auth-form .btn-primary {
+  background-color: #0c829e; /* Azul mais escuro para o botão */
+  border-color: #0c829e;
+}
+.auth-form .btn-primary:hover {
+  background-color: #0a6b82;
+  border-color: #0a6b82;
+}
+.auth-form .text-sky-400 { /* Ajusta a cor do link de "Cadastre-se" */
+    color: #0ebaff; /* Um azul mais vibrante */
+}
+.auth-form .text-sky-400:hover {
+    color: #0cc0ff;
 }
