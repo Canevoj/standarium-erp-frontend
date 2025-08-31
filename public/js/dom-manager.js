@@ -378,11 +378,7 @@ const domManager = {
         </form>
     </div>
     `;
-    /**
-     * Cacheia e retorna referências para elementos DOM importantes.
-     * Isso evita a necessidade de buscar elementos repetidamente, otimizando o desempenho.
-     * @returns {object} Um objeto contendo as referências dos elementos DOM.
-     */
+
     cacheDOMElements() {
     return {
         // Overlays e contêineres principais
@@ -471,7 +467,7 @@ const domManager = {
         confirmOkBtn: document.getElementById('confirm-ok-btn'),
         confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
 
-        // --- ELEMENTOS DO NOVO MODAL DE VENDA ---
+        // Modal de Venda
         saleModal: document.getElementById('sale-modal'),
         saleForm: document.getElementById('sale-form'),
         cancelSaleBtn: document.getElementById('cancel-sale-btn')
