@@ -284,3 +284,43 @@ body {
         margin: 1cm; /* Margens da página */
     }
 }
+/* ===== ESTILOS PARA O LOGIN ANIMADO ===== */
+
+/* 1. Define a animação de rotação */
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 2. Aplica o efeito ao nosso contêiner de login */
+.login-box-animated {
+  /* Garante que o conteúdo do formulário fique por cima da animação */
+  z-index: 0; 
+}
+
+/* 3. Cria a borda animada usando o ::before */
+.login-box-animated::before {
+  content: '';
+  position: absolute;
+  z-index: -1; /* Coloca a borda animada atrás do conteúdo do card */
+  
+  /* Faz a animação ocupar uma área maior que o card para o efeito de "borda" */
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  
+  /* O gradiente cônico é o segredo do efeito! */
+  background: conic-gradient(
+    transparent,
+    rgba(14, 165, 233, 0.8), /* Cor azul do nosso tema (sky-500) */
+    transparent 30%
+  );
+  
+  /* Aplica a animação que definimos acima */
+  animation: rotating 4s linear infinite;
+}
