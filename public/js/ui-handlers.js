@@ -525,4 +525,3 @@ async saveSale() {
     }
 };
 
-export { uiHandlers };
